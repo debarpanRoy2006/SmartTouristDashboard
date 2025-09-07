@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Companion Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet.js for Interactive Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Fallback */
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url('https://images.unsplash.com/photo-1520531158340-44015069e78e?q=80&w=2894&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            z-index: -1;
+            animation: fadeInBody 1s ease-in-out forwards;
+        }
+
+        @keyframes fadeInBody {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            border: none;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+        .card:hover {
+            transform: translateY(-10px) scale(1.03) perspective(1000px);
+            box-shadow: 0 25px 40px -10px rgb(0 0 0 / 0.15), 0 10px 15px -8px rgb(0 0 0 / 0.1);
+        }
+        .btn-hover-effect {
+            transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-hover-effect:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0d6efd;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .text-shadow {
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        .brand-font {
+            font-family: 'Pacifico', cursive;
+            color: #34495e;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Typing animation styles */
+        .typing-animation {
+            width: fit-content;
+            display: inline-block;
+            overflow: hidden; 
+            border-right: .1em solid white; 
+            margin: 0 auto; 
+            letter-spacing: .05em;
+            animation: 
+                typing 3.5s steps(28, end) forwards,
+                blink-caret .75s step-end infinite;
+        }
+
+        @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: white; } }
+        
+        .gemini-response { white-space: pre-wrap; line-height: 1.6; }
+        
+        #map { height: 300px; border-radius: 0.5rem; z-index: 1; }
+
+        /* Slideshow Header */
+        #slideshow-header {
+            position: relative;
+            height: 50vh;
+            min-height: 25rem;
+            width: 100%;
+            overflow: hidden;
+            transition: background-image 1.5s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            opacity: 0; /* Start hidden for animation */
+            animation: fadeInHeader 1s 0.5s ease-out forwards;
+        }
+        
+        @keyframes fadeInHeader {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #slideshow-header .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg bg-light bg-opacity-75 backdrop-blur-sm shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">Travel Companion 🚀</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Destinations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Safety Tips</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4 my-md-5">
+        <!-- Header -->
+        <header class="text-center mb-5 pt-4">
+            <h1 class="display-3 fw-bold brand-font">Travel Companion</h1>
+            <p class="lead text-muted">Your AI-powered dashboard for safer, smarter travel planning. 🗺</p>
+        </header>
+
+        <!-- Featured Slideshow Header -->
+        <div id="slideshow-header" class="mb-5 rounded-3 shadow-lg card p-0 overflow-hidden">
+            <div class="overlay d-flex align-items-center justify-content-center p-4 text-center">
+                 <h2 class="typing-animation text-white display-5 fw-bold text-shadow">Discover Your Next<br>Adventure</h2>
+            </div>
+        </div>
+
+        <main class="row g-4">
+
+            <!-- Left Column: Main Tools -->
+            <div class="col-lg-8 d-flex flex-column gap-4">
+                
+                <!-- Travel Destination Chooser -->
+                <div class="card p-4">
+                    <div class="card-body">
+                        <h2 class="card-title h4 fw-semibold mb-3 d-flex align-items-center">
+                            <i class="bi bi-geo-alt-fill text-primary me-2"></i> Destination Explorer 📸
+                        </h2>
+                        <p class="card-text text-muted mb-3">Enter a place, country, or theme to get inspired.</p>
+                        <div class="input-group">
+                            <input type="text" id="destinationInput" placeholder="e.g., 'Paris', 'beaches'" class="form-control form-control-lg">
+                            <button id="searchBtn" class="btn btn-primary btn-lg btn-hover-effect">Search</button>
+                        </div>
+                        <div id="imageResults" class="mt-4">
+                            <p id="destinationMessage" class="text-muted text-center">Your visual journey awaits... ✨</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Past Travel Safety Score -->
+                <div class="card p-4">
+                     <div class="card-body">
+                        <h2 class="card-title h4 fw-semibold mb-3">📊 Past Travel Safety Score</h2>
+                        <p class="card-text text-muted mb-3">Add your previously visited places in India to calculate your average travel safety score.</p>
+                        <div class="input-group">
+                            <input type="text" id="historyInput" placeholder="e.g., 'Goa', 'Shimla'" class="form-control">
+                            <button id="addHistoryBtn" class="btn btn-info text-white btn-hover-effect">Add</button>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label fw-semibold">Your Average Score:</label>
+                            <div class="progress" style="height: 20px;">
+                                <div id="safetyScoreBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0</div>
+                            </div>
+                        </div>
+                        <div id="historyList" class="mt-3">
+                            <!-- History items will be added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Itinerary Planner -->
+                <div class="card p-4">
+                    <div class="card-body">
+                        <h2 class="card-title h4 fw-semibold mb-3">✨ AI Itinerary Planner</h2>
+                        <p class="card-text text-muted mb-3">Let Gemini build a custom trip plan for you.</p>
+                        <div class="row g-2">
+                            <div class="col-sm-8">
+                                <input type="text" id="itineraryLocationInput" placeholder="Location (e.g., 'Kyoto')" class="form-control">
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="number" id="itineraryDaysInput" placeholder="Days (e.g., 5)" class="form-control">
+                            </div>
+                        </div>
+                        <button id="generateItineraryBtn" class="btn btn-purple w-100 mt-2 btn-hover-effect" style="background-color: #6f42c1; color: white;">Generate Itinerary 📝</button>
+                        <div id="itineraryResult" class="mt-4 p-3 bg-light rounded" style="min-height: 150px;">
+                            <p id="itineraryMessage" class="text-muted text-center m-auto">Your personalized travel plan will appear here.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Travel Safety Decider -->
+                <div class="card p-4">
+                    <div class="card-body">
+                        <h2 class="card-title h4 fw-semibold mb-3"><i class="bi bi-shield-check text-success me-2"></i> Travel Safety Check 🛡</h2>
+                        <p class="card-text text-muted mb-3">Get a safety assessment and AI-powered tips for any city.</p>
+                        <div class="input-group">
+                             <input type="text" id="safetyInput" placeholder="e.g., 'Rome', 'Tokyo'" class="form-control">
+                             <button id="checkSafetyBtn" class="btn btn-success btn-hover-effect">Assess</button>
+                        </div>
+                        <div id="safetyResult" class="mt-4 p-3 bg-light rounded" style="min-height: 100px;">
+                            <p id="safetyMessage" class="text-muted text-center m-auto">Safety analysis will appear here.</p>
+                        </div>
+                         <div id="aiSafetyTipsResult" class="mt-2"></div>
+                    </div>
+                </div>
+
+                 <!-- AI Nearby Attractions -->
+                <div class="card p-4">
+                     <div class="card-body">
+                        <h2 class="card-title h4 fw-semibold mb-3">📍 AI Nearby Attractions</h2>
+                        <p class="card-text text-muted mb-3">Discover hidden gems around you using your location.</p>
+                        <button id="findNearbyBtn" class="btn btn-info w-100 text-white btn-hover-effect">Find Attractions Near Me 🌍</button>
+                        <div id="nearbyResult" class="mt-4 p-3 bg-light rounded" style="min-height: 150px;">
+                            <p id="nearbyMessage" class="text-muted text-center m-auto">Allow location access to find cool spots!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Info & Map -->
+            <div class="col-lg-4">
+                <div class="sticky-top" style="top: 80px;">
+                    <div class="d-flex flex-column gap-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h2 class="h5 card-title fw-semibold mb-3">🗺 Interactive Map</h2>
+                               <div id="map"></div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h2 class="h5 card-title fw-semibold mb-3"><i class="bi bi-lightbulb-fill text-warning me-2"></i> How It Works 💡</h2>
+                                <div class="small">
+                                    <p><strong>📸 Destination Explorer:</strong> Uses the Unsplash API to show inspiring photos in a carousel.</p>
+                                    <p><strong>📊 Past Travel Safety Score:</strong> Calculates an average safety score based on your travel history, using a simulated ML model pre-loaded with data for 100+ locations in India.</p>
+                                    <p><strong>✨ AI Itinerary Planner:</strong> Uses the Gemini API to generate a creative travel plan.</p>
+                                    <p><strong>🛡 Safety Check & AI Tips:</strong> Get a simulated safety score and AI-powered tips from Gemini.</p>
+                                     <p><strong>📍 AI Nearby Attractions:</strong> Uses your browser's location to find and suggest interesting places with Gemini.</p>
+                                    <div class="alert alert-warning mt-3 small">
+                                        <strong>Important:</strong> You must add your Unsplash API key for image search to function.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="bg-white mt-5 border-top">
+        <div class="container py-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start">
+                <div class="mb-3 mb-md-0">
+                    <h3 class="h5 fw-bold">Travel Companion 🚀</h3>
+                    <p class="text-muted mb-0">Plan smarter, travel safer.</p>
+                </div>
+                <div class="d-flex gap-4">
+                    <a href="#" class="text-decoration-none text-muted">Home</a>
+                    <a href="#" class="text-decoration-none text-muted">About</a>
+                    <a href="#" class="text-decoration-none text-muted">Contact</a>
+                </div>
+            </div>
+            <div class="mt-4 border-top pt-3 text-center text-muted small">
+                &copy; 2024 Travel Companion. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- CONFIGURATION ---
+        const UNSPLASH_API_KEY = 'YOUR_UNSPLASH_API_KEY'; // Get from https://unsplash.com/developers
+        const GEMINI_API_KEY = ''; // Leave as-is.
+
+        // --- DOM ELEMENTS ---
+        const destinationInput = document.getElementById('destinationInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const imageResults = document.getElementById('imageResults');
+        const destinationMessage = document.getElementById('destinationMessage');
+
+        const safetyInput = document.getElementById('safetyInput');
+        const checkSafetyBtn = document.getElementById('checkSafetyBtn');
+        const safetyResult = document.getElementById('safetyResult');
+        const aiSafetyTipsResult = document.getElementById('aiSafetyTipsResult');
+
+        const itineraryLocationInput = document.getElementById('itineraryLocationInput');
+        const itineraryDaysInput = document.getElementById('itineraryDaysInput');
+        const generateItineraryBtn = document.getElementById('generateItineraryBtn');
+        const itineraryResult = document.getElementById('itineraryResult');
+        
+        const findNearbyBtn = document.getElementById('findNearbyBtn');
+        const nearbyResult = document.getElementById('nearbyResult');
+
+        const historyInput = document.getElementById('historyInput');
+        const addHistoryBtn = document.getElementById('addHistoryBtn');
+        const historyList = document.getElementById('historyList');
+        const safetyScoreBar = document.getElementById('safetyScoreBar');
+
+
+        // --- STATE & DATA ---
+        let map;
+        let travelHistory = [];
+        
+        const headerImages = [
+            'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2940&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2940&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?q=80&w=2940&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?q=80&w=2940&auto=format&fit=crop'
+        ];
+        
+        // Simulated ML Model Dataset is the same as previous version
+        const indianSafetyData = {
+            "agra": 75, "jaipur": 80, "goa": 70, "delhi": 65, "mumbai": 68, "shimla": 90, 
+            "leh": 88, "ladakh": 88, "rishikesh": 85, "udaipur": 82, "darjeeling": 87, 
+            "varanasi": 60, "kolkata": 72, "chennai": 78, "munnar": 92, "mysore": 84, 
+            "amritsar": 86, "jodhpur": 79, "jaisalmer": 81, "srinagar": 55, "kerala": 89,
+            "manali": 83, "ooty": 88, "pondicherry": 84, "coorg": 91, "hyderabad": 77,
+            "bengaluru": 76, "pune": 79, "ahmedabad": 81, "gangtok": 93, "nainital": 87,
+            "khajuraho": 74, "hampi": 85, "gokarna": 80, "ajanta caves": 88, "ellora caves": 88,
+            "mahabalipuram": 86, "madurai": 78, "tirupati": 82, "puri": 75, "konark": 76,
+            "bodh gaya": 80, "nalanda": 79, "haridwar": 74, "dwarka": 83, "somnath": 84,
+            "mathura": 70, "vrindavan": 71, "allahabad": 68, "lucknow": 73, "patna": 67,
+            "indore": 79, "bhopal": 78, "raipur": 72, "ranchi": 71, "guwahati": 77, "shillong": 89,
+            "itanagar": 85, "kohima": 86, "imphal": 70, "aizawl": 90, "agartala": 81, "kanchipuram": 83,
+            "rameshwaram": 85, "kanyakumari": 87, "thanjavur": 84, "mahabaleshwar": 88, "lonavla": 82,
+            "alappuzha": 90, "thekkady": 89, "kovalam": 86, "varkala": 85, "kochi": 80,
+            "gulmarg": 60, "pahalgam": 62, "jammu": 68, "chandigarh": 88, "dehradun": 85,
+            "mussoorie": 86, "kasauli": 90, "dalhousie": 89, "dharamshala": 88, "spiti": 92,
+            "andaman": 93, "nicobar": 91, "lakshadweep": 94, "daman": 78, "diu": 80, "silvassa": 79
+        };
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeMap();
+            startHeaderSlideshow();
+        });
+
+        // --- EVENT LISTENERS ---
+        searchBtn.addEventListener('click', fetchDestinationImages);
+        destinationInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchDestinationImages();
+        });
+
+        checkSafetyBtn.addEventListener('click', checkTravelSafety);
+        safetyInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkTravelSafety();
+        });
+
+        generateItineraryBtn.addEventListener('click', generateItinerary);
+        findNearbyBtn.addEventListener('click', findNearbyAttractions);
+        
+        addHistoryBtn.addEventListener('click', addLocationToHistory);
+        historyInput.addEventListener('keypress', (e) => {
+             if (e.key === 'Enter') addLocationToHistory();
+        });
+
+        // --- MAP LOGIC ---
+        function initializeMap() {
+            map = L.map('map').setView([20, 0], 2); // Default view
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+        }
+
+        function updateMap(lat, lon, zoom = 13) {
+            if (map) {
+                map.setView([lat, lon], zoom);
+                L.marker([lat, lon]).addTo(map)
+                    .bindPopup('Your current location.')
+                    .openPopup();
+            }
+        }
+        
+        // --- HEADER SLIDESHOW LOGIC ---
+        function startHeaderSlideshow() {
+            const header = document.getElementById('slideshow-header');
+            let currentImageIndex = 0;
+
+            headerImages.forEach(src => { (new Image()).src = src; });
+            header.style.backgroundImage = url('${headerImages[currentImageIndex]}');
+
+            setInterval(() => {
+                currentImageIndex = (currentImageIndex + 1) % headerImages.length;
+                header.style.backgroundImage = url('${headerImages[currentImageIndex]}');
+            }, 5000);
+        }
+
+        // --- GEMINI API CALLER ---
+        async function callGemini(prompt) {
+            const apiUrl = https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY};
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Gemini API Error:", errorData);
+                    throw new Error(API Error: ${response.status} ${response.statusText});
+                }
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+                return candidate?.content?.parts?.[0]?.text || "No response text found.";
+            } catch (error) {
+                 console.error("Failed to call Gemini API:", error);
+                 return Error: Could not retrieve AI-powered response. Please check the browser console for details.;
+            }
+        }
+
+        // --- PAST TRAVEL SAFETY SCORE LOGIC ---
+        function addLocationToHistory() {
+            const locationRaw = historyInput.value.trim().toLowerCase();
+            if (!locationRaw) return;
+
+            if (indianSafetyData[locationRaw] && !travelHistory.some(item => item.name === locationRaw)) {
+                travelHistory.push({ name: locationRaw, score: indianSafetyData[locationRaw] });
+                updateHistoryList();
+                calculateAndUpdateSafetyBar();
+            }
+            historyInput.value = '';
+        }
+
+        function updateHistoryList() {
+            historyList.innerHTML = '';
+            if (travelHistory.length === 0) {
+                 historyList.innerHTML = '<p class="small text-muted">Your visited places will appear here.</p>';
+                 return;
+            }
+            const listGroup = document.createElement('ul');
+            listGroup.className = 'list-group';
+            travelHistory.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = <span class="text-capitalize">${item.name}</span> <span class="badge bg-secondary rounded-pill">${item.score}</span>;
+                listGroup.appendChild(li);
+            });
+            historyList.appendChild(listGroup);
+        }
+        
+        function calculateAndUpdateSafetyBar() {
+            if (travelHistory.length === 0) {
+                safetyScoreBar.style.width = '0%';
+                safetyScoreBar.textContent = '0';
+                safetyScoreBar.classList.remove('bg-success', 'bg-primary', 'bg-warning', 'bg-danger');
+                return;
+            }
+            const totalScore = travelHistory.reduce((acc, item) => acc + item.score, 0);
+            const avgScore = Math.round(totalScore / travelHistory.length);
+            
+            safetyScoreBar.style.width = ${avgScore}%;
+            safetyScoreBar.textContent = avgScore;
+            safetyScoreBar.setAttribute('aria-valuenow', avgScore);
+
+            let colorClass = 'bg-danger';
+            if (avgScore > 80) colorClass = 'bg-success';
+            else if (avgScore > 60) colorClass = 'bg-primary';
+            else if (avgScore > 40) colorClass = 'bg-warning';
+            
+            safetyScoreBar.className = 'progress-bar'; // Reset classes
+            safetyScoreBar.classList.add(colorClass);
+        }
+
+        // --- DESTINATION EXPLORER & BOOTSTRAP CAROUSEL LOGIC ---
+        async function fetchDestinationImages() {
+            const query = destinationInput.value.trim();
+            if (!query) {
+                displayDestinationMessage('Please enter a destination to search.', true);
+                return;
+            }
+            if (UNSPLASH_API_KEY === 'YOUR_UNSPLASH_API_KEY') {
+                displayDestinationMessage('Error: Please add your Unsplash API key to the script.', true);
+                return;
+            }
+            
+            imageResults.innerHTML = '<div class="loader mx-auto"></div>';
+            
+            const apiUrl = https://api.unsplash.com/search/photos?query=${query}&per_page=5&orientation=landscape&client_id=${UNSPLASH_API_KEY};
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(API error: ${response.statusText});
+                const data = await response.json();
+                createBootstrapCarousel(data.results);
+                itineraryLocationInput.value = query;
+            } catch (error) {
+                console.error('Failed to fetch images:', error);
+                displayDestinationMessage('Could not fetch images. Check your API key or try another search.', true);
+            }
+        }
+
+        function createBootstrapCarousel(images) {
+            imageResults.innerHTML = ''; 
+            if (images.length === 0) {
+                displayDestinationMessage(No images found for "${destinationInput.value}". Try a broader term., false);
+                return;
+            }
+            const carouselId = 'destinationCarousel';
+            const carouselHTML = `
+                <div id="${carouselId}" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner rounded">
+                        ${images.map((img, index) => `
+                            <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                                <img src="${img.urls.regular}" class="d-block w-100" style="height: 250px; object-fit: cover;" alt="${img.alt_description || 'Travel Image'}">
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>`;
+            imageResults.innerHTML = carouselHTML;
+        }
+        
+        function displayDestinationMessage(message, isError = false) {
+             imageResults.innerHTML = <p class="text-center ${isError ? 'text-danger' : 'text-muted'}">${message}</p>;
+        }
+
+        // --- AI ITINERARY PLANNER ---
+        async function generateItinerary() {
+            const location = itineraryLocationInput.value.trim();
+            const days = itineraryDaysInput.value.trim();
+            if (!location || !days) {
+                itineraryResult.innerHTML = <p class="text-danger text-center m-auto">Please enter both a location and the number of days.</p>;
+                return;
+            }
+            itineraryResult.innerHTML = '<div class="loader mx-auto"></div>';
+            const prompt = Create a detailed but easy-to-read travel itinerary for a ${days}-day trip to ${location}. For each day, suggest a morning, afternoon, and evening activity. Include at least one food recommendation per day. Format the response cleanly.;
+            const responseText = await callGemini(prompt);
+            itineraryResult.innerHTML = <div class="text-start w-100 gemini-response small">${responseText}</div>;
+        }
+
+        // --- AI NEARBY ATTRACTIONS (GEO-LOCATION) ---
+        function findNearbyAttractions() {
+            if (!navigator.geolocation) {
+                nearbyResult.innerHTML = <p class="text-danger text-center m-auto">Geolocation is not supported by your browser.</p>;
+                return;
+            }
+            
+            nearbyResult.innerHTML = '<div class="loader mx-auto"></div>';
+
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const { latitude, longitude } = position.coords;
+                updateMap(latitude, longitude);
+                
+                const prompt = I am currently at latitude ${latitude} and longitude ${longitude}. Please suggest 5 interesting and diverse tourist attractions, cafes, or parks near me. Provide a brief, one-sentence description for each.;
+                const responseText = await callGemini(prompt);
+                nearbyResult.innerHTML = <div class="text-start w-100 gemini-response small">${responseText}</div>;
+            }, (error) => {
+                console.error("Geolocation Error:", error);
+                nearbyResult.innerHTML = <p class="text-danger text-center m-auto">Could not get your location. Please ensure you have granted location permissions.</p>;
+            });
+        }
+
+        // --- TRAVEL SAFETY DECIDER LOGIC ---
+        function checkTravelSafety() {
+            const location = safetyInput.value.trim();
+            if (!location) {
+                displaySafetyResult('<p class="text-danger">Please enter a location.</p>');
+                aiSafetyTipsResult.innerHTML = '';
+                return;
+            }
+
+            safetyResult.innerHTML = '<div class="loader mx-auto"></div>';
+            aiSafetyTipsResult.innerHTML = '';
+
+            setTimeout(() => {
+                const score = Math.floor(Math.random() * 100) + 1;
+                let level, colorClass, advice;
+                if (score > 80) { level = "Very Low Risk"; colorClass = "bg-success-subtle text-success-emphasis"; advice = "Standard precautions are recommended."; } 
+                else if (score > 60) { level = "Low Risk"; colorClass = "bg-primary-subtle text-primary-emphasis"; advice = "Generally safe, but be aware of your surroundings."; } 
+                else if (score > 40) { level = "Moderate Risk"; colorClass = "bg-warning-subtle text-warning-emphasis"; advice = "Exercise increased caution."; } 
+                else { level = "High Risk"; colorClass = "bg-danger-subtle text-danger-emphasis"; advice = "Reconsider travel. Check official advisories."; }
+
+                const resultHTML = `
+                    <div class="text-center w-100">
+                        <h3 class="fw-bold text-capitalize">${location}</h3>
+                        <div class="badge ${colorClass} fs-6 my-2">${level} (Score: ${score}/100)</div>
+                        <p class="text-muted small">${advice}</p>
+                        <button id="getSafetyTipsBtn" class="btn btn-sm btn-outline-success mt-2 btn-hover-effect">✨ Get AI Safety Tips</button>
+                    </div>`;
+                displaySafetyResult(resultHTML);
+                document.getElementById('getSafetyTipsBtn').addEventListener('click', () => getSafetyTips(location));
+            }, 1000);
+        }
+
+        async function getSafetyTips(location) {
+            const tipsBtn = document.getElementById('getSafetyTipsBtn');
+            tipsBtn.disabled = true;
+            tipsBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            const prompt = Provide a concise list of 3-5 practical and specific safety tips for a tourist visiting ${location}. Focus on common scams, transportation safety, and general awareness. Do not include a preamble.;
+            const responseText = await callGemini(prompt);
+            aiSafetyTipsResult.innerHTML = `
+                <div class="alert alert-success mt-3 small">
+                    <h4 class="alert-heading h6">AI-Powered Safety Tips for ${location}</h4>
+                    <div class="gemini-response">${responseText}</div>
+                </div>`;
+            tipsBtn.remove();
+        }
+        
+        function displaySafetyResult(html) { safetyResult.innerHTML = html; }
+
+    </script>
+</body>
+</html>

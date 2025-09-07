@@ -1,16 +1,13 @@
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from tourists.views import TouristViewSet, add_tourist, panic_button
-from smart_tourist_backend.views import home
-
-router = DefaultRouter()
-router.register(r'tourists', TouristViewSet, basename='tourist')
+from .views import home # Import from the project's views.py
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # The root URL of your site will now be handled by this home view
     path('', home, name='home'),
-    path('api/', include(router.urls)),
-    path('api/add-tourist/', add_tourist, name='add-tourist'),
-    path('api/panic/', panic_button, name='panic'),
+    
+    # Your API endpoints will be prefixed with 'api/v1/auth/'
+    path('api/v1/auth/', include('tourists.urls')),
 ]
