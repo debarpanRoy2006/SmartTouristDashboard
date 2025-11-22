@@ -64,7 +64,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # This path points to a 'templates' folder in the project root.
         # Ensure your 'templates' folder is at the same level as manage.py
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+         'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

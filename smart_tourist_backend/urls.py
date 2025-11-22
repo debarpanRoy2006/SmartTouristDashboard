@@ -11,6 +11,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
     path('api/v1/auth/', include('tourists.urls')),
+    path('', include('tourists.urls')),  # <---- THIS MUST EXIST
+
 ]
 
 # --- Add this line at the bottom ---

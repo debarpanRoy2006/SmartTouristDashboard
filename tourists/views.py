@@ -6,6 +6,7 @@ from .models import User
 # UPDATED: The import statement now uses the correct serializer class names
 from .serializers import RegisterSerializer, VerifyEmailSerializer, VerifyPhoneSerializer, LoginSerializer
 from .utils import send_email_otp, send_phone_otp
+from django.shortcuts import render
 
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
@@ -118,4 +119,7 @@ class LoginView(generics.GenericAPIView):
             }, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid credentials."}, status=status.HTTP_400_BAD_REQUEST)
-
+   
+def dashboard(request):
+    return render(request, 'dashboard.html')
+    
