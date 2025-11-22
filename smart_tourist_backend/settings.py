@@ -114,11 +114,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# This tells Django where to look for your static files.
-# Make sure to create a 'static' folder inside 'smart_tourist_backend'.
+# UPDATED: This now points to a 'static' folder in your main project root.
 STATICFILES_DIRS = [
-    BASE_DIR / 'smart_tourist_backend' / 'static',
+    os.path.join(BASE_DIR, 'static'),
 ]
+
 
 
 # Default primary key field type

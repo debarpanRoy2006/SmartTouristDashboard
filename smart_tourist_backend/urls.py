@@ -1,13 +1,19 @@
 from django.contrib import admin
 from django.urls import path, include
-from .views import home # Import from the project's views.py
+from .views import home
+
+# --- Add these imports ---
+from django.conf import settings
+from django.conf.urls.static import static
+# -------------------------
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
-    # The root URL of your site will now be handled by this home view
     path('', home, name='home'),
-    
-    # Your API endpoints will be prefixed with 'api/v1/auth/'
     path('api/v1/auth/', include('tourists.urls')),
 ]
+
+# --- Add this line at the bottom ---
+# This tells Django how to serve static files during development.
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
