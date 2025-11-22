@@ -7,4 +7,5 @@ urlpatterns = [
     path('verify-phone/', VerifyPhoneOTPView.as_view(), name='verify-phone'),
     path('login/', LoginView.as_view(), name='login'),
     path('dashboard/', dashboard, name='dashboard'),  # <-- KEEP THIS ONE ONLY
+    path('destination', dashboard, name='destination'),  # <-- KEEP THIS ONE ONLY
 ]
