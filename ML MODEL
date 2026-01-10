@@ -1,0 +1,150 @@
+import pandas as pd
+import numpy as np
+
+def generate_data():
+    """Generates a simulated tourist trip with normal and anomalous data points."""
+    print("Generating simulated trip data...")
+    route_start={'lat': 24.83, 'lon': 92.79}
+    route_end={'lat': 24.93, 'lon': 92.89}
+    normal_points=[]
+    num_normal_points=50
+    timestamps = pd.to_datetime(pd.date_range(start='2025-09-12 11:00',periods=num_normal_points,freq='1min'))
+    for i in range(num_normal_points):
+        fraction = i / (num_normal_points - 1)
+        lat=route_start['lat']+fraction*(route_end['lat']-route_start['lat'])
+        lon=route_start['lon']+fraction*(route_end['lon']-route_start['lon'])
+        lat+=np.random.normal(0, 0.0005)
+        lon+=np.random.normal(0, 0.0005)
+        normal_points.append({'timestamp': timestamps[i], 'latitude': lat, 'longitude': lon, 'status': 'normal'})
+    df = pd.DataFrame(normal_points)
+    anomalies = [
+        # 1. Sudden, large route deviation
+        {'timestamp': pd.to_datetime('2025-09-12 11:51'), 'latitude': 25.05, 'longitude': 92.95, 'status': 'anomaly_deviation'},
+        # 2.big time jump, no movement
+        {'timestamp': pd.to_datetime('2025-09-12 12:30'), 'latitude': df.iloc[-1]['latitude'], 'longitude': df.iloc[-1]['longitude'], 'status': 'anomaly_inactivity'}
+    ]
+    final_df = pd.concat([df, pd.DataFrame(anomalies)], ignore_index=True).sort_values(by='timestamp')
+    final_df.to_csv('trip_data.csv', index=False)
+    print("✅ Saved simulated data to 'trip_data.csv'")
+
+if __name__=='__main__':
+    generate_data()
+
+
+!pip install haversine
+
+import pandas as pd
+from sklearn.ensemble import IsolationForest
+from haversine import haversine, Unit
+import joblib
+PLANNED_ROUTE_START = (24.83, 92.79)
+PLANNED_ROUTE_END = (24.93, 92.89)
+
+def engineer_features(df):
+    """Calculates all the necessary features for the model."""
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df = df.sort_values(by='timestamp')
+    df['time_since_last_ping'] = df['timestamp'].diff().dt.total_seconds().fillna(0)
+    df['prev_lat'] = df['latitude'].shift(1)
+    df['prev_lon'] = df['longitude'].shift(1)
+
+    def calculate_distance(row):
+        if pd.isna(row['prev_lat']):
+            return 0
+        return haversine((row['latitude'], row['longitude']), (row['prev_lat'], row['prev_lon']), unit=Unit.KILOMETERS)
+
+    df['distance_moved_km'] = df.apply(calculate_distance, axis=1)
+    df['speed_kmh'] = (df['distance_moved_km'] / (df['time_since_last_ping'] / 3600)).fillna(0).replace([np.inf, -np.inf], 0)
+    df['distance_from_route'] = df.apply(lambda row: haversine((row['latitude'], row['longitude']), PLANNED_ROUTE_START), axis=1)
+
+    df['time_of_day'] = df['timestamp'].dt.hour
+
+    return df.drop(columns=['prev_lat', 'prev_lon'])
+
+def train_model():
+    """Loads data, engineers features, and trains the Isolation Forest model."""
+    print("Training the anomaly detection model...")
+    df = pd.read_csv('trip_data.csv')
+    df_featured = engineer_features(df)
+    normal_data = df_featured[df_featured['status'] == 'normal']
+
+    features = [
+        'latitude',
+        'longitude',
+        'time_since_last_ping',
+        'speed_kmh',
+        'distance_from_route',
+        'time_of_day'
+    ]
+
+    X_train = normal_data[features]
+    model = IsolationForest(contamination='auto', random_state=42)
+    model.fit(X_train)
+    joblib.dump(model, 'tourist_safety_model.joblib')
+    print("✅ Model trained and saved to 'tourist_safety_model.joblib'")
+
+if __name__ == '__main__':
+    train_model()
+
+import pandas as pd
+import joblib
+from haversine import haversine, Unit
+import numpy as np
+MODEL = joblib.load('tourist_safety_model.joblib')
+print("✅ Anomaly detection model loaded.")
+PLANNED_ROUTE_START = (24.83, 92.79)
+FEATURES = [
+    'latitude',
+    'longitude',
+    'time_since_last_ping',
+    'speed_kmh',
+    'distance_from_route',
+    'time_of_day'
+]
+last_location_data = {
+    'timestamp': pd.to_datetime('2025-09-12 10:59'),
+    'latitude': 24.83,
+    'longitude': 92.79
+}
+
+def check_location(current_lat, current_lon, current_ts_str):
+    """Checks a new GPS location for anomalies."""
+    global last_location_data
+
+    current_ts = pd.to_datetime(current_ts_str)
+    time_since_ping = (current_ts - last_location_data['timestamp']).total_seconds()
+
+    distance_moved = haversine(
+        (current_lat, current_lon),
+        (last_location_data['latitude'], last_location_data['longitude']),
+        unit=Unit.KILOMETERS
+    )
+
+    speed = (distance_moved / (time_since_ping / 3600)) if time_since_ping > 0 else 0
+    speed = 0 if np.isinf(speed) else speed
+
+    dist_from_route = haversine((current_lat, current_lon), PLANNED_ROUTE_START)
+    time_of_day = current_ts.hour
+    feature_vector = pd.DataFrame([[
+        current_lat, current_lon, time_since_ping, speed, dist_from_route, time_of_day
+    ]], columns=FEATURES)
+    prediction = MODEL.predict(feature_vector)
+    last_location_data = {'timestamp': current_ts, 'latitude': current_lat, 'longitude': current_lon}
+    if prediction[0] == -1:
+        return "🚨🚨 ANOMALY DETECTED! Possible distress situation. 🚨🚨"
+    else:
+        return "✅ Status: Normal"
+
+if __name__ == '__main__':
+    print("\n--- Starting Real-Time Monitoring Simulation ---")
+    incoming_pings = [
+        {'lat': 24.88, 'lon': 92.84, 'ts': '2025-09-12 11:30'}, # Normal
+        {'lat': 24.90, 'lon': 92.86, 'ts': '2025-09-12 11:35'}, # Normal
+        {'lat': 25.05, 'lon': 92.95, 'ts': '2025-09-12 11:36'}, # Anomaly (deviation)
+        {'lat': 25.05, 'lon': 92.95, 'ts': '2025-09-12 12:15'}, # Anomaly (inactivity/signal loss)
+    ]
+
+    for ping in incoming_pings:
+        print(f"\nChecking ping at {ping['ts']}...")
+        result = check_location(ping['lat'], ping['lon'], ping['ts'])
+        print(result)

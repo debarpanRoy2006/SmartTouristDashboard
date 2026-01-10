@@ -1,0 +1,401 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Smart Tourist Safety</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Georgia&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- BACKGROUND & BODY --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e6e7e9; 
+            z-index: -1;
+            filter: blur(4px);
+        }
+
+        /* --- DISCORD-STYLE CARD --- */
+        .auth-container-card {
+            display: flex;
+            background: rgba(253, 250, 250, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-top: 4px solid #f39c12;
+            max-width: 900px;
+            width: 100%;
+            min-height: 600px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Left Side: Forms */
+        .auth-form-section {
+            flex: 1.3;
+            padding: 3rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Right Side: QR */
+        .auth-qr-section {
+            flex: 0.7;
+            background: rgba(243, 156, 18, 0.08);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+            border-left: 1px solid rgba(0,0,0,0.05);
+        }
+
+        @media (max-width: 768px) {
+            .auth-container-card { flex-direction: column; min-height: auto; }
+            .auth-qr-section { padding: 2rem; border-left: none; border-top: 1px solid #eee; }
+        }
+
+        /* --- TYPOGRAPHY & ELEMENTS --- */
+        .brand-font {
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            background: linear-gradient(90deg, #e67e22, #f39c12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .namaste-img {
+            width: 100px; height: 100px; object-fit: cover;
+            border-radius: 50%; border: 4px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        .btn-primary { background-color: #f39c12; border-color: #f39c12; }
+        .btn-primary:hover { background-color: #e67e22; border-color: #e67e22; }
+        .form-control:focus { border-color: #f39c12; box-shadow: 0 0 0 0.25rem rgba(243, 156, 18, 0.25); }
+        a { color: #e67e22; text-decoration: none; }
+
+        /* Doodles */
+        .doodle { position: absolute; opacity: 0.3; width: 40px; z-index: 0; color: #f39c12; }
+        .doodle-1 { top: 20px; left: 20px; }
+        .doodle-2 { top: 20px; right: 20px; }
+        
+        .qr-box {
+            background: white; padding: 15px; border-radius: 10px;
+            border: 1px solid #ddd; font-size: 7rem; color: #333;
+            line-height: 1; margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="/" class="position-absolute top-0 start-0 m-4 fw-bold text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Back to Home
+    </a>
+
+    <div class="auth-container-card">
+        
+        <div class="auth-form-section">
+            <div class="doodle doodle-1"><i class="bi bi-stars"></i></div>
+            <div class="doodle doodle-2"><i class="bi bi-geo-alt-fill"></i></div>
+
+            <div class="text-center mb-3">
+                <img src="{% static 'hawa_mahal.jpg' %}" class="namaste-img" alt="Icon">
+                <h2 id="formTitle" class="brand-font mb-1">Namaste India</h2>
+                <p id="welcomeMessage" class="text-muted small">Welcome! Please sign in to continue.</p>
+            </div>
+
+            <div id="apiMessage" class="alert d-none py-2 small text-center" role="alert"></div>
+
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label small text-muted fw-bold">EMAIL</label>
+                    <input type="email" class="form-control" id="loginEmail" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-muted fw-bold">PASSWORD</label>
+                    <input type="password" class="form-control" id="loginPassword" required>
+                    <div class="text-end mt-1"><a href="#" class="small">Forgot password?</a></div>
+                </div>
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary">Log In</button>
+                </div>
+            </form>
+
+            <form id="signupForm" class="d-none">
+                <div class="row g-2">
+                    <div class="col-6 mb-2">
+                        <label class="form-label small text-muted fw-bold">USERNAME</label>
+                        <input type="text" class="form-control" id="signupUsername" required>
+                    </div>
+                    <div class="col-6 mb-2">
+                        <label class="form-label small text-muted fw-bold">PHONE</label>
+                        <input type="tel" class="form-control" id="signupPhone" placeholder="+91..." required>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small text-muted fw-bold">EMAIL</label>
+                    <input type="email" class="form-control" id="signupEmail" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small text-muted fw-bold">PASSPORT / AADHAAR NO.</label>
+                    <input type="text" class="form-control" id="signupPassport" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-muted fw-bold">PASSWORD</label>
+                    <input type="password" class="form-control" id="signupPassword" required>
+                </div>
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+            </form>
+
+            <form id="emailOtpForm" class="d-none">
+                <div class="mb-3 text-center">
+                    <label class="form-label fw-bold">Verify Email</label>
+                    <input type="text" class="form-control text-center fs-4 letter-spacing-2" id="emailOtp" maxlength="6" placeholder="XXXXXX" required>
+                    <div class="form-text">Enter the 6-digit code sent to your email.</div>
+                </div>
+                <div class="d-grid mb-3"><button type="submit" class="btn btn-primary">Verify Email</button></div>
+            </form>
+
+            <form id="phoneOtpForm" class="d-none">
+                <div class="mb-3 text-center">
+                    <label class="form-label fw-bold">Verify Phone</label>
+                    <input type="text" class="form-control text-center fs-4 letter-spacing-2" id="phoneOtp" maxlength="6" placeholder="XXXXXX" required>
+                    <div class="form-text">Enter the 6-digit code sent to your phone.</div>
+                </div>
+                <div class="d-grid mb-3"><button type="submit" class="btn btn-primary">Verify & Finish</button></div>
+            </form>
+
+            <div id="successView" class="d-none text-center py-5">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                <h4 class="text-success mt-3">You're In!</h4>
+                <p class="text-muted">Redirecting to dashboard...</p>
+            </div>
+
+            <div id="toggleContainer" class="text-center">
+                <p id="toggleText" class="small text-muted mb-0">
+                    Need an account? <a href="#" id="showSignup" class="fw-bold">Register</a>
+                </p>
+            </div>
+            
+            <div class="text-center mt-3">
+                 <button type="button" class="btn btn-outline-warning btn-sm rounded-pill" id="getTipBtn">
+                    ✨ Get a Travel Tip
+                </button>
+            </div>
+        </div>
+
+        <div class="auth-qr-section">
+            <div class="qr-box"><i class="bi bi-qr-code"></i></div>
+            <h4 class="fw-bold mb-2">Log in with QR Code</h4>
+            <p class="text-muted small mb-4">Scan this with the <strong>Travel Buddy App</strong> <br>to log in instantly.</p>
+            <button class="btn btn-outline-dark btn-sm">Download App</button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="tipModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header border-0"><h5 class="modal-title">✨ AI Travel Tip</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+          <div class="modal-body text-center" id="tipModalBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- STATE & ELEMENTS ---
+            const views = {
+                login: document.getElementById('loginForm'),
+                signup: document.getElementById('signupForm'),
+                emailOtp: document.getElementById('emailOtpForm'),
+                phoneOtp: document.getElementById('phoneOtpForm'),
+                success: document.getElementById('successView')
+            };
+            const ui = {
+                title: document.getElementById('formTitle'),
+                msg: document.getElementById('welcomeMessage'),
+                toggleContainer: document.getElementById('toggleContainer'),
+                toggleText: document.getElementById('toggleText'),
+                apiMessage: document.getElementById('apiMessage'),
+                tipBtn: document.getElementById('getTipBtn')
+            };
+            
+            const tipModal = new bootstrap.Modal(document.getElementById('tipModal'));
+            const tipModalBody = document.getElementById('tipModalBody');
+
+            let userEmail = '';
+            let userPhone = '';
+
+            function getCookie(name) {
+                if (!document.cookie) return null;
+                const token = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+                return token ? decodeURIComponent(token.split('=')[1]) : null;
+            }
+            const csrftoken = getCookie('csrftoken');
+
+            // --- VIEW SWITCHER ---
+            const showView = (view) => {
+                ui.apiMessage.classList.add('d-none');
+                Object.values(views).forEach(el => el.classList.add('d-none'));
+                views[view].classList.remove('d-none');
+                ui.toggleContainer.classList.remove('d-none');
+                ui.tipBtn.classList.remove('d-none');
+
+                if (view === 'login') {
+                    ui.title.textContent = 'Namaste India';
+                    ui.msg.textContent = 'Welcome back! Please sign in.';
+                    ui.toggleText.innerHTML = `Need an account? <a href="#" id="showSignup" class="fw-bold">Register</a>`;
+                    document.getElementById('showSignup').onclick = (e) => { e.preventDefault(); showView('signup'); };
+                } else if (view === 'signup') {
+                    ui.title.textContent = 'Create Account';
+                    ui.msg.textContent = 'Start your safe journey.';
+                    ui.toggleText.innerHTML = `Already have an account? <a href="#" id="showLogin" class="fw-bold">Log In</a>`;
+                    document.getElementById('showLogin').onclick = (e) => { e.preventDefault(); showView('login'); };
+                } else if (view === 'emailOtp' || view === 'phoneOtp') {
+                    ui.title.textContent = 'Verification';
+                    ui.msg.textContent = 'Check your inbox/SMS.';
+                    ui.toggleContainer.classList.add('d-none');
+                    ui.tipBtn.classList.add('d-none');
+                } else if (view === 'success') {
+                    ui.toggleContainer.classList.add('d-none');
+                    ui.tipBtn.classList.add('d-none');
+                }
+            };
+
+            const showMsg = (text, isErr=true) => {
+                ui.apiMessage.innerHTML = Array.isArray(text) ? text.join('<br>') : text;
+                ui.apiMessage.className = `alert py-2 small text-center ${isErr ? 'alert-danger' : 'alert-success'}`;
+                ui.apiMessage.classList.remove('d-none');
+            };
+
+            // --- API ACTIONS (Connected to your views.py) ---
+
+            // 1. LOGIN (To LoginView)
+            views.login.addEventListener('submit', async(e) => {
+                e.preventDefault();
+                try {
+                    // NOTICE: Using /api/v1/auth/login/ to avoid conflict with page URL
+                    const res = await fetch('/api/v1/auth/login/', { 
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                        body: JSON.stringify({
+                            email: document.getElementById('loginEmail').value,
+                            password: document.getElementById('loginPassword').value
+                        })
+                    });
+                    const data = await res.json();
+                    if(res.ok) {
+                        localStorage.setItem('authToken', data.token);
+                        showMsg('Login Successful!', false);
+                        setTimeout(() => window.location.href = '/dashboard/', 1000);
+                    } else showMsg(data.error || 'Login failed.');
+                } catch(err) { showMsg('Server connection failed.'); }
+            });
+
+            // 2. REGISTER (To RegisterView)
+            views.signup.addEventListener('submit', async(e) => {
+                e.preventDefault();
+                userEmail = document.getElementById('signupEmail').value;
+                userPhone = document.getElementById('signupPhone').value;
+                
+                try {
+                    const res = await fetch('/api/v1/auth/register/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                        body: JSON.stringify({
+                            username: document.getElementById('signupUsername').value,
+                            email: userEmail,
+                            phone: userPhone,
+                            passport_aadhaar: document.getElementById('signupPassport').value, // Matches Serializer
+                            password: document.getElementById('signupPassword').value
+                        })
+                    });
+                    const data = await res.json();
+                    if(res.ok) showView('emailOtp');
+                    else showMsg(data.errors || 'Registration failed.');
+                } catch(err) { showMsg('Server connection failed.'); }
+            });
+
+            // 3. VERIFY EMAIL (To VerifyEmailOTPView)
+            views.emailOtp.addEventListener('submit', async(e) => {
+                e.preventDefault();
+                try {
+                    const res = await fetch('/api/v1/auth/verify-email/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                        body: JSON.stringify({
+                            email: userEmail,
+                            otp: document.getElementById('emailOtp').value
+                        })
+                    });
+                    const data = await res.json();
+                    if(res.ok) showView('phoneOtp');
+                    else showMsg(data.error || 'Invalid Email OTP');
+                } catch(err) { showMsg('Server connection failed.'); }
+            });
+
+            // 4. VERIFY PHONE (To VerifyPhoneOTPView)
+            views.phoneOtp.addEventListener('submit', async(e) => {
+                e.preventDefault();
+                try {
+                    const res = await fetch('/api/v1/auth/verify-phone/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                        body: JSON.stringify({
+                            phone: userPhone,
+                            otp: document.getElementById('phoneOtp').value
+                        })
+                    });
+                    const data = await res.json();
+                    if(res.ok) {
+                        localStorage.setItem('authToken', data.token);
+                        showView('success');
+                        setTimeout(() => window.location.href = '/dashboard/', 2000);
+                    } else showMsg(data.error || 'Invalid Phone OTP');
+                } catch(err) { showMsg('Server connection failed.'); }
+            });
+
+            // --- TRAVEL TIP (Gemini API) ---
+            ui.tipBtn.addEventListener('click', async () => {
+                tipModalBody.innerHTML = `<div class="spinner-border text-warning"></div><div class="mt-2">Generating tip...</div>`;
+                tipModal.show();
+                // Add API Key Here
+                const apiKey = ""; 
+                try {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ contents: [{ parts: [{ text: "Give me one short, fascinating travel tip for India." }] }] })
+                    });
+                    const data = await res.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    tipModalBody.innerHTML = text ? `<p class="lead">${text}</p>` : `<p class="text-danger">No tip found.</p>`;
+                } catch(e) { tipModalBody.innerHTML = `<p class="text-danger">Connection error.</p>`; }
+            });
+
+            showView('login');
+        });
+    </script>
+</body>
+</html>
