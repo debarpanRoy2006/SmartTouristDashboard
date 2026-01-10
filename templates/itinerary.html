@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Itinerary Planner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>.ai-output { white-space: pre-wrap; background: #f8f9fa; padding: 20px; border-radius: 10px; }</style>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-secondary mb-3">← Dashboard</a>
+        <h2 class="mb-4">✨ AI Itinerary Planner</h2>
+        
+        <div class="card p-4 shadow-sm mb-4">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text" name="location" class="form-control" placeholder="Where are you going?" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" name="days" class="form-control" placeholder="How many days?" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Generate Plan with AI</button>
+                </div>
+            </form>
+        </div>
+
+        {% if plan %}
+        <div class="ai-output shadow-sm border">
+            <h4>Your Custom Plan:</h4>
+            <hr>
+            {{ plan|linebreaks }}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
