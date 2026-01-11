@@ -1,4 +1,5 @@
 import os
+import time  
 import requests
 import google.generativeai as genai
 from django.shortcuts import render
@@ -8,6 +9,13 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
+import json
+
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+
+
+from duckduckgo_search import DDGS 
 
 # Existing imports
 from .models import User
@@ -15,8 +23,31 @@ from .serializers import RegisterSerializer, VerifyEmailSerializer, VerifyPhoneS
 from .utils import send_email_otp, send_phone_otp
 
 # --- CONFIGURATION FOR AI ---
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-ai_model = genai.GenerativeModel('gemini-1.5-flash')
+genai.configure(api_key="AIzaSyDM6sFBd-l44AxT3ci-USCNDlfuNHgGGDM")
+
+# 1. Fetch valid models from Google
+valid_models = []
+print("Checking available models...")
+try:
+    for m in genai.list_models():
+        if 'generateContent' in m.supported_generation_methods:
+            valid_models.append(m.name)
+except Exception as e:
+    print(f"Error listing models: {e}")
+
+# 2. Automatically select the best available model
+selected_model_name = 'gemini-pro' # Default fallback
+
+if valid_models:
+    if 'models/gemini-1.5-flash' in valid_models:
+        selected_model_name = 'models/gemini-1.5-flash'
+    elif 'models/gemini-pro' in valid_models:
+        selected_model_name = 'models/gemini-pro'
+    else:
+        selected_model_name = valid_models[0]
+
+print(f"✅ ACTIVATING MODEL: {selected_model_name}")
+ai_model = genai.GenerativeModel(selected_model_name)
 
 # ==========================================
 # AUTHENTICATION VIEWS (Kept Intact)
@@ -138,14 +169,9 @@ def login_page(request):
     return render(request, 'login.html')
 
 def explorer_page(request):
+    # Legacy function for old template route
     query = request.GET.get('query', 'travel')
     images = []
-    client_id = os.getenv("UNSPLASH_API_KEY")
-    if client_id:
-        url = f"https://api.unsplash.com/search/photos?query={query}&per_page=9&client_id={client_id}"
-        response = requests.get(url)
-        if response.status_code == 200:
-            images = response.json().get('results', [])
     return render(request, 'explorer.html', {'images': images, 'query': query})
 
 def itinerary_page(request):
@@ -179,26 +205,87 @@ def nearby_page(request):
     return render(request, 'nearby.html')
 
 def history_stats(request):
-    """
-    Handles the 'history' URL. 
-    This displays visited places and calculates average safety scores.
-    """
-    # Sample data logic
     past_trips = [
         {'name': 'Goa', 'score': 85},
         {'name': 'Shimla', 'score': 92},
         {'name': 'Delhi', 'score': 68},
         {'name': 'Munnar', 'score': 90}
     ]
-    
     avg_score = sum(trip['score'] for trip in past_trips) // len(past_trips) if past_trips else 0
-
-    context = {
-        'past_trips': past_trips,
-        'avg_score': avg_score
-    }
+    context = {'past_trips': past_trips, 'avg_score': avg_score}
     return render(request, 'history.html', context)
 
 def map_page(request):
-    """Handles the 'map' URL."""
     return render(request, 'map.html')
+
+
+
+def fetch_image_from_web(query):
+    """
+    Searches the entire web for an image using DuckDuckGo.
+    Replaces the old Wikipedia fetcher to find more local results.
+    """
+    try:
+        search_term = f"{query} tourism high quality"
+        
+      
+        with DDGS() as ddgs:
+            results = list(ddgs.images(
+                search_term, 
+                max_results=1,
+                safesearch='on', 
+                layout='Wide',   
+            ))
+            
+            if results:
+                print(f"DuckDuckGo found image for: {query}")
+                return results[0]['image']
+                
+    except Exception as e:
+        
+        print(f"Image Search Error for {query}: {e}")
+    
+    return None
+
+def explorer(request):
+    query = request.GET.get('query', '')
+    attractions = []
+    
+    
+    SAFE_FALLBACK_IMG = "https://dummyimage.com/600x400/cccccc/000000&text=Image+Not+Found"
+
+    if query:
+        
+        try:
+            prompt = (
+                f"Identify 4 real, popular tourist attractions in {query}. "
+                f"Return the data ONLY as a JSON list of objects. "
+                f"Example format: [{{'name': 'Spot Name', 'description': 'Short info', 'rating': 4.5}}]. "
+                f"If the city does not exist, return an empty list []."
+            )
+            ai_response = ai_model.generate_content(prompt)
+            clean_json = ai_response.text.replace('```json', '').replace('```', '').strip()
+            attractions = json.loads(clean_json)
+        except Exception as e:
+            print(f"AI Error: {e}")
+            attractions = []
+
+       
+        for spot in attractions:
+            full_search_query = f"{spot['name']} {query}"
+            
+            
+            image_url = fetch_image_from_web(full_search_query)
+            
+            if image_url:
+                spot['image_url'] = image_url
+            else:
+                spot['image_url'] = SAFE_FALLBACK_IMG
+            
+            
+            time.sleep(1.8)
+
+    return render(request, 'explorer.html', {
+        'query': query,
+        'attractions': attractions
+    })

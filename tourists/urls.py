@@ -8,7 +8,7 @@ urlpatterns = [
     path('destination/', views.dashboard, name='destination'),
     
     # Travel Feature Views (Now correctly referencing your views.py)
-    path('explorer/', views.explorer_page, name='explorer'),
+    path('explorer/', views.explorer, name='explorer'),
     path('itinerary/', views.itinerary_page, name='itinerary'),
     path('safety/', views.safety_page, name='safety'),
     path('nearby/', views.nearby_page, name='nearby'),

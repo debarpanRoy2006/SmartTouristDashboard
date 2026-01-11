@@ -2,35 +2,381 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Destination Explorer</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-    <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>📸 Explorer: {{ query|title }}</h2>
-            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
-        </div>
-        
-        <form method="GET" class="input-group mb-5">
-            <input type="text" name="query" class="form-control" placeholder="Search a new place...">
-            <button class="btn btn-primary" type="submit">Search</button>
-        </form>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel | {{ query|title }}</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
-        <div class="row g-4">
-            {% for img in images %}
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <img src="{{ img.urls.regular }}" class="card-img-top" style="height: 250px; object-fit: cover;">
-                    <div class="card-body p-2 text-center">
-                        <small class="text-muted">Photo by {{ img.user.name }}</small>
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --accent: #d35400; /* Burnt Orange */
+            --bg: #fdfbf7; /* Warm Paper White */
+            --card-bg: #ffffff;
+            --text-muted: #666;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            font-family: 'Manrope', sans-serif;
+            color: var(--primary);
+            overflow-x: hidden;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            height: 60vh;
+            min-height: 400px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+            background: #111; /* Fallback */
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            filter: grayscale(30%) contrast(1.1);
+            z-index: 0;
+        }
+
+        .hero-content {
+            z-index: 2;
+            position: relative;
+            max-width: 800px;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            color: white;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            opacity: 0; /* Hidden initially for GSAP */
+            transform: translateY(30px);
+        }
+
+        .hero p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        /* --- GLASS SEARCH BAR --- */
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .search-form {
+            display: flex;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px;
+            border-radius: 100px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        .search-form:focus-within {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
+            transform: scale(1.02);
+        }
+
+        .search-form input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            color: #fff;
+            outline: none;
+            font-family: 'Manrope', sans-serif;
+        }
+        
+        .search-form:focus-within input {
+            color: #333;
+        }
+
+        .search-form button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .search-form button:hover {
+            background: var(--accent);
+        }
+
+        /* --- CONTENT GRID --- */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+
+        .section-header {
+            margin-bottom: 60px;
+            padding-left: 20px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .section-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+
+        .section-header span {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+        }
+
+        /* --- MODERN CARD DESIGN --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 0; /* Sharp corners specifically for that "magazine" look */
+            overflow: hidden;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            cursor: pointer;
+            opacity: 0; /* For GSAP */
+            transform: translateY(50px);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px -15px rgba(0,0,0,0.15);
+        }
+
+        .card-img-wrapper {
+            height: 280px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.7s ease;
+        }
+
+        .card:hover img {
+            transform: scale(1.05);
+        }
+
+        .card-content {
+            padding: 30px;
+            position: relative;
+        }
+
+        .card-rating {
+            position: absolute;
+            top: -20px;
+            right: 30px;
+            background: var(--accent);
+            color: white;
+            padding: 8px 16px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 5px 15px rgba(211, 84, 0, 0.4);
+        }
+
+        .card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        .card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .card-footer {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .read-more {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            text-decoration: none;
+            position: relative;
+        }
+        
+        .read-more::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; left: 0;
+            width: 0%; height: 2px;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+        
+        .card:hover .read-more::after {
+            width: 100%;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .section-header h2 { font-size: 2rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <img class="hero-bg" src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop" alt="Travel Background">
+        
+        <div class="hero-content">
+            {% if query %}
+                <h1>Discover {{ query|title }}</h1>
+                <p>Curated experiences and hidden gems selected just for you.</p>
+            {% else %}
+                <h1>The World Awaits</h1>
+                <p>Type a city name below to begin your journey.</p>
+            {% endif %}
+
+            <div class="search-wrapper">
+                <form method="GET" action="" class="search-form">
+                    <input type="text" name="query" value="{{ query }}" placeholder="Search destination (e.g., Kyoto, Jaipur)..." required>
+                    <button type="submit">Explore</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        {% if attractions %}
+        <div class="section-header">
+            <span>Curated For You</span>
+            <h2>Top Attractions</h2>
+        </div>
+        {% endif %}
+
+        <div class="grid">
+            {% for spot in attractions %}
+            <div class="card">
+                <div class="card-img-wrapper">
+                    <img 
+                        src="{{ spot.image_url }}" 
+                        alt="{{ spot.name }}"
+                        onerror="this.onerror=null;this.src='https://dummyimage.com/600x400/eeeeee/000000&text=Image+Unavailable';"
+                    >
+                </div>
+                
+                <div class="card-content">
+                    <div class="card-rating">★ {{ spot.rating }}</div>
+                    <h3>{{ spot.name }}</h3>
+                    <p>{{ spot.description|truncatewords:25 }}</p>
+                    
+                    <div class="card-footer">
+                        <span style="font-size: 0.8rem; color: #999;">Top Rated</span>
+                        <a href="#" class="read-more">Details</a>
                     </div>
                 </div>
             </div>
             {% empty %}
-            <p class="text-center">No images found. Try a different search term.</p>
+                {% if query %}
+                <div style="text-align: center; grid-column: 1/-1; padding: 50px;">
+                    <h3 style="font-family: 'Playfair Display'; font-size: 1.5rem; margin-bottom: 10px;">No destinations found</h3>
+                    <p style="color: #666;">We couldn't find matches for "{{ query }}". Try searching for a major city.</p>
+                </div>
+                {% endif %}
             {% endfor %}
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            gsap.registerPlugin();
+
+            // 1. Hero Text Animation (Slide Up & Fade In)
+            var tl = gsap.timeline();
+            
+            tl.to(".hero h1", {
+                y: 0,
+                opacity: 1,
+                duration: 1,
+                ease: "power3.out"
+            })
+            .to(".hero p", {
+                y: 0,
+                opacity: 1,
+                duration: 0.8,
+                ease: "power3.out"
+            }, "-=0.6") // Start 0.6s before previous ends
+            .to(".search-wrapper", {
+                y: 0,
+                opacity: 1,
+                duration: 0.8,
+                ease: "back.out(1.7)" // Adds a slight 'bounce' effect
+            }, "-=0.4");
+
+            // 2. Card Stagger Animation
+            // This makes cards appear one by one
+            gsap.to(".card", {
+                scrollTrigger: ".grid", // Trigger when grid is in view (optional, simple version here)
+                y: 0,
+                opacity: 1,
+                duration: 0.8,
+                stagger: 0.2, // 0.2s delay between each card
+                ease: "power2.out",
+                delay: 0.5 // Wait for hero to finish a bit
+            });
+        });
+    </script>
+
+    
 </body>
 </html>
