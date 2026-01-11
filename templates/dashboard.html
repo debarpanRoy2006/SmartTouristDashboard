@@ -1,110 +1,265 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Travel Companion | Dashboard</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
-        .brand-font { font-family: 'Pacifico', cursive; color: #34495e; }
-        .card { 
-            border: none; border-radius: 1rem; 
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            height: 100%;
+        :root {
+            --primary-gold: #f39c12;
+            --dark-glass: rgba(15, 15, 15, 0.95);
         }
-        .card:hover { 
-            transform: translateY(-10px); 
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1); 
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #f0f4f8 0%, #d7e1ec 100%);
+            overflow-x: hidden;
         }
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            display: inline-block;
+
+        .brand-font { font-family: 'Pacifico', cursive; color: var(--primary-gold); }
+
+        /* --- Live Notification Ticker --- */
+        .ticker-wrap {
+            width: 100%; overflow: hidden; background: var(--dark-glass);
+            color: white; padding: 10px 0; font-size: 0.85rem; z-index: 1001;
         }
-        .btn-entry { border-radius: 20px; font-weight: 600; }
+        .ticker {
+            display: inline-block; white-space: nowrap; padding-right: 100%;
+            animation: ticker 30s linear infinite;
+        }
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
+        /* --- Massive Cinematic Header --- */
+        #slideshow-header {
+            position: relative; height: 85vh; min-height: 35rem; width: 100%;
+            overflow: hidden; background-size: cover; background-position: center;
+            transition: background-image 1.5s ease-in-out;
+            border-radius: 0 0 4rem 4rem; margin-top: -20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        #slideshow-header .overlay {
+            position: absolute; top: 0; left: 0; height: 100%; width: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 0 15px;
+        }
+
+        .typing-text {
+            color: white; font-size: 5.5rem; font-weight: 900; letter-spacing: -2px;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.8); border-right: 6px solid var(--primary-gold);
+            white-space: nowrap; overflow: hidden; width: 0;
+            animation: typing 3s steps(20) forwards, blink 0.7s infinite;
+        }
+        @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes blink { from { border-color: transparent } to { border-color: var(--primary-gold) } }
+
+        /* --- Glass Cards --- */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 2rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .glass-card:hover {
+            transform: translateY(-15px);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            border: 1px solid var(--primary-gold);
+        }
+
+        /* --- AI Tip Section --- */
+        .tip-section {
+            background: var(--dark-glass);
+            border-radius: 2rem; color: white; padding: 30px;
+            margin: 4rem 0; position: relative; overflow: hidden;
+        }
+        .tip-section::after {
+            content: "AI"; position: absolute; right: -20px; bottom: -20px;
+            font-size: 10rem; opacity: 0.05; font-weight: 900;
+        }
+
+        /* --- Footer --- */
+        .site-footer {
+            background: var(--dark-glass); backdrop-filter: blur(15px);
+            color: #ffffff; padding: 80px 0 40px; margin-top: 5rem;
+            border-top: 4px solid var(--primary-gold);
+        }
+        
+        @media (max-width: 992px) {
+            .typing-text { font-size: 3rem; }
+            #slideshow-header { height: 60vh; }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold brand-font" href="{% url 'dashboard' %}">Travel Companion</a>
-        </div>
-    </nav>
-
-    <div class="container my-5">
-        <header class="text-center mb-5">
-            <h1 class="display-4 fw-bold">Welcome, Traveler!</h1>
-            <p class="lead text-muted">Where would you like to go today?</p>
-        </header>
-
-        <div class="row g-4">
-            
-            <div class="col-md-6 col-lg-4">
-                <div class="card p-4 text-center">
-                    <div class="feature-icon text-primary"><i class="bi bi-camera-reels"></i></div>
-                    <h3>Explorer</h3>
-                    <p class="text-muted small">Visualize your dream destinations with high-quality galleries.</p>
-                    <a href="{% url 'explorer' %}" class="btn btn-outline-primary btn-entry mt-auto">Start Exploring</a>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card p-4 text-center border-top border-5 border-info">
-                    <div class="feature-icon text-info"><i class="bi bi-calendar-check"></i></div>
-                    <h3>AI Itinerary</h3>
-                    <p class="text-muted small">Generate personalized day-by-day plans using Gemini AI.</p>
-                    <a href="{% url 'itinerary' %}" class="btn btn-info text-white btn-entry mt-auto">Plan Trip</a>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card p-4 text-center">
-                    <div class="feature-icon text-success"><i class="bi bi-shield-lock"></i></div>
-                    <h3>Safety Hub</h3>
-                    <p class="text-muted small">Analyze travel risks and get AI-powered safety tips.</p>
-                    <a href="{% url 'safety' %}" class="btn btn-outline-success btn-entry mt-auto">Assess Risk</a>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card p-4 text-center">
-                    <div class="feature-icon text-warning"><i class="bi bi-geo-alt"></i></div>
-                    <h3>Nearby Gems</h3>
-                    <p class="text-muted small">Discover hidden spots around your current location.</p>
-                    <a href="{% url 'nearby' %}" class="btn btn-outline-warning btn-entry mt-auto">Find Places</a>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card p-4 text-center">
-                    <div class="feature-icon text-danger"><i class="bi bi-bar-chart-line"></i></div>
-                    <h3>My Stats</h3>
-                    <p class="text-muted small">Track your past travels and calculate your safety experience score.</p>
-                    <a href="{% url 'history' %}" class="btn btn-outline-danger btn-entry mt-auto">View Stats</a>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card p-4 text-center bg-dark text-white">
-                    <div class="feature-icon text-light"><i class="bi bi-map"></i></div>
-                    <h3>Global Map</h3>
-                    <p class="text-light text-opacity-75 small">Interactive world map to pin your journey.</p>
-                    <a href="{% url 'map' %}" class="btn btn-light btn-entry mt-auto">Open Map</a>
-                </div>
-            </div>
-
+    <div class="ticker-wrap">
+        <div class="ticker">
+            <span class="px-5"><i class="bi bi-info-circle text-warning"></i> Travel Alert: Weather warning issued for Northern Himalayas.</span>
+            <span class="px-5"><i class="bi bi-star-fill text-warning"></i> AI Tip: Always carry a physical copy of your Digital ID in remote areas.</span>
+            <span class="px-5"><i class="bi bi-shield-fill-check text-success"></i> System Status: All safety monitoring nodes are active.</span>
         </div>
     </div>
 
-    <footer class="text-center py-4 text-muted border-top bg-white mt-5">
-        <p>&copy; 2026 Travel Companion AI</p>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold brand-font fs-3" href="{% url 'dashboard' %}">Travel Companion</a>
+            <div class="d-flex align-items-center">
+                <span class="me-3 d-none d-md-block text-muted small"><i class="bi bi-clock"></i> <span id="clock"></span></span>
+                <a class="nav-link fw-bold px-3 border-start" href="{% url 'history' %}">My Stats</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="slideshow-header">
+        <div class="overlay">
+            <h2 class="typing-text">Discover Your Next Adventure</h2>
+            <p class="text-white mt-3 opacity-75 letter-spacing-2">SECURE · SMARTER · SEAMLESS</p>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="row mb-5 text-center">
+            <div class="col-12">
+                <h4 class="fw-bold">Welcome Back, Explorer!</h4>
+                <p class="text-muted">Your current travel safety status is <span class="badge bg-success">Optimal</span></p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card glass-card p-4 text-center h-100">
+                    <div class="mb-3 text-primary fs-1"><i class="bi bi-camera-reels"></i></div>
+                    <h5 class="fw-bold">Visual Explorer</h5>
+                    <p class="text-muted small">Immerse yourself in high-res destination galleries.</p>
+                    <a href="{% url 'explorer' %}" class="btn btn-outline-primary rounded-pill mt-auto">Browse Gallery</a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card glass-card p-4 text-center h-100">
+                    <div class="mb-3 text-info fs-1"><i class="bi bi-magic"></i></div>
+                    <h5 class="fw-bold">Gemini Planner</h5>
+                    <p class="text-muted small">Let our AI build your perfect day-by-day journey.</p>
+                    <a href="{% url 'itinerary' %}" class="btn btn-info text-white rounded-pill mt-auto">Create Plan</a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card glass-card p-4 text-center h-100">
+                    <div class="mb-3 text-success fs-1"><i class="bi bi-shield-check"></i></div>
+                    <h5 class="fw-bold">Safety Hub</h5>
+                    <p class="text-muted small">Real-time risk assessment and city-specific tips.</p>
+                    <a href="{% url 'safety' %}" class="btn btn-success rounded-pill mt-auto">Check Safety</a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card glass-card p-4 text-center h-100">
+                    <div class="mb-3 text-warning fs-1"><i class="bi bi-compass"></i></div>
+                    <h5 class="fw-bold">Nearby Gems</h5>
+                    <p class="text-muted small">Uncover local secrets based on your current GPS location.</p>
+                    <a href="{% url 'nearby' %}" class="btn btn-outline-warning rounded-pill mt-auto">Explore Local</a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card glass-card p-4 text-center h-100">
+                    <div class="mb-3 text-danger fs-1"><i class="bi bi-activity"></i></div>
+                    <h5 class="fw-bold">Travel Insights</h5>
+                    <p class="text-muted small">Analytics of your past trips and safety experience.</p>
+                    <a href="{% url 'history' %}" class="btn btn-outline-danger rounded-pill mt-auto">Analytics</a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card glass-card p-4 text-center h-100 bg-dark text-white shadow-lg">
+                    <div class="mb-3 text-warning fs-1"><i class="bi bi-map"></i></div>
+                    <h5 class="fw-bold">Globe Tracker</h5>
+                    <p class="text-light opacity-75 small">An interactive 3D map to pin your memories.</p>
+                    <a href="{% url 'map' %}" class="btn btn-warning fw-bold rounded-pill mt-auto">Open Map</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="tip-section shadow-lg">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <i class="bi bi-lightbulb-fill text-warning display-4"></i>
+                </div>
+                <div class="col-md-10">
+                    <h5 class="fw-bold">AI Travel Insight of the Day</h5>
+                    <p class="mb-0" id="ai-tip">"Travelling to Jaipur? Visit the Hawa Mahal at sunrise for the best views and least crowds."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container text-center text-md-start">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 class="brand-font fs-3">Travel Companion</h5>
+                    <p class="small opacity-75">Your AI-powered shield for safe and smart exploration across India.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 text-center">
+                    <h5>Quick Access</h5>
+                    <ul class="list-unstyled small opacity-75">
+                        <li><a href="{% url 'dashboard' %}" class="text-white">Home</a></li>
+                        <li><a href="{% url 'safety' %}" class="text-white">Safety Protocols</a></li>
+                        <li><a href="#" class="text-white">Emergency Contacts</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4 text-center text-md-end">
+                    <h5>Emergency Response</h5>
+                    <p class="small text-danger fw-bold"><i class="bi bi-telephone-fill"></i> SOS: 112</p>
+                    <button class="btn btn-sm btn-danger px-4">Instant SOS Alert</button>
+                </div>
+            </div>
+            <hr class="my-4 opacity-25">
+            <p class="text-center small opacity-50">&copy; 2026 Smart Tourist System. All Rights Reserved.</p>
+        </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Hero Slideshow
+        const headerImages = [
+            'https://res.cloudinary.com/diqkoqmwh/image/upload/v1763819339/istockphoto-543179390-612x612_ww2z9k.jpg',
+            'https://res.cloudinary.com/diqkoqmwh/image/upload/v1763819985/Dakhineshwar_Temple_beside_the_Hoogly__West_Bengal_v1azop.jpg',
+            'https://res.cloudinary.com/diqkoqmwh/image/upload/v1763820056/istockphoto-519330110-612x612_ihgeqk.jpg'
+        ];
+        const header = document.getElementById('slideshow-header');
+        let currentIndex = 0;
+        function changeBg() {
+            header.style.backgroundImage = `url('${headerImages[currentIndex]}')`;
+            currentIndex = (currentIndex + 1) % headerImages.length;
+        }
+        setInterval(changeBg, 5000);
+        changeBg();
+
+        // Clock Widget
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
 </body>
 </html>
