@@ -10,6 +10,8 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 import json
+import re
+
 
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -23,7 +25,7 @@ from .serializers import RegisterSerializer, VerifyEmailSerializer, VerifyPhoneS
 from .utils import send_email_otp, send_phone_otp
 
 # --- CONFIGURATION FOR AI ---
-genai.configure(api_key="AIzaSyDM6sFBd-l44AxT3ci-USCNDlfuNHgGGDM")
+genai.configure(api_key="AIzaSyAJ4bQB-ndwDQc3_DticBo0N6KPh9NQiB4")
 
 # 1. Fetch valid models from Google
 valid_models = []
@@ -174,33 +176,35 @@ def explorer_page(request):
     images = []
     return render(request, 'explorer.html', {'images': images, 'query': query})
 
-def itinerary_page(request):
-    plan = ""
-    if request.method == "POST":
-        location = request.POST.get('location')
-        days = request.POST.get('days')
-        prompt = f"Provide a detailed {days}-day travel itinerary for {location}. Break it down into morning, afternoon, and evening."
-        try:
-            ai_response = ai_model.generate_content(prompt)
-            plan = ai_response.text
-        except Exception as e:
-            plan = f"Could not generate plan: {str(e)}"
-    return render(request, 'itinerary.html', {'plan': plan})
+
+
+
+
+
 
 def safety_page(request):
     assessment = None
-    if request.method == "POST":
-        city = request.POST.get('city')
-        import random
-        score = random.randint(30, 98)
-        prompt = f"Give 3 vital safety tips for a tourist in {city}."
-        try:
-            tips = ai_model.generate_content(prompt).text
-        except:
-            tips = "Always stay alert and check local news."
-        assessment = {'city': city, 'score': score, 'tips': tips}
-    return render(request, 'safety.html', {'assessment': assessment})
+    city = request.POST.get('city', '')
 
+    if request.method == "POST":
+        # Get Safety Report from Gemini
+        prompt = (
+            f"Provide a detailed travel safety report for {city}. "
+            f"Use clear headers for Crime, Health, and Transport. "
+            f"Provide 3 specific Emergency Tips. "
+            f"Keep the tone professional and do not use raw JSON."
+        )
+        
+        try:
+            response = ai_model.generate_content(prompt)
+            assessment = response.text
+        except Exception:
+            assessment = "Safety system is temporarily busy. Please try again."
+
+    return render(request, 'safety.html', {
+        'assessment': assessment, 
+        'city': city
+    })
 def nearby_page(request):
     return render(request, 'nearby.html')
 
@@ -288,4 +292,44 @@ def explorer(request):
     return render(request, 'explorer.html', {
         'query': query,
         'attractions': attractions
+    })
+
+
+
+def itinerary_page(request):
+    plan_data = [] # List to hold our structured day dictionaries
+    location = ""
+    days = ""
+
+    if request.method == "POST":
+        location = request.POST.get('location')
+        days = request.POST.get('days')
+        
+        # Engineering a structured response for easy parsing
+        prompt = (
+            f"Generate a {days}-day itinerary for {location}. "
+            f"Strictly start each new day with the marker '###DAY [Number]###'. "
+            f"Include sections for Morning, Afternoon, Evening, and a Safety Tip. "
+            f"Keep text clean without extra markdown symbols like **."
+        )
+        
+        try:
+            response = ai_model.generate_content(prompt)
+            raw_text = response.text
+            
+            # Parsing the AI text into individual Day cards
+            days_raw = re.split(r'###DAY \d+###', raw_text)
+            for index, content in enumerate(days_raw[1:], start=1):
+                if content.strip():
+                    plan_data.append({
+                        "count": index,
+                        "content": content.strip().replace('\n', '<br>') # Convert newlines for HTML
+                    })
+        except Exception as e:
+            plan_data = [{"count": "!", "content": f"Architect Error: {str(e)}"}]
+
+    return render(request, 'itinerary.html', {
+        'plan_data': plan_data,
+        'location': location,
+        'days': days
     })

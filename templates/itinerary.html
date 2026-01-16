@@ -1,38 +1,101 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI Itinerary Planner</title>
+    <title>Itinerary Architect | Travel Companion</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>.ai-output { white-space: pre-wrap; background: #f8f9fa; padding: 20px; border-radius: 10px; }</style>
-</head>
-<body class="bg-light">
-    <div class="container py-5">
-        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-secondary mb-3">← Dashboard</a>
-        <h2 class="mb-4">✨ AI Itinerary Planner</h2>
-        
-        <div class="card p-4 shadow-sm mb-4">
-            <form method="POST">
-                {% csrf_token %}
-                <div class="row g-3">
-                    <div class="col-md-8">
-                        <input type="text" name="location" class="form-control" placeholder="Where are you going?" required>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="number" name="days" class="form-control" placeholder="How many days?" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Generate Plan with AI</button>
-                </div>
-            </form>
-        </div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 
-        {% if plan %}
-        <div class="ai-output shadow-sm border">
-            <h4>Your Custom Plan:</h4>
-            <hr>
-            {{ plan|linebreaks }}
+    <style>
+        :root { --accent: #f39c12; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f0f4f8; color: #2c3e50; }
+
+        /* Professional Hero Image Banner */
+        .hero-banner {
+            height: 45vh; width: 100%;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), 
+                        url('https://images.unsplash.com/photo-1506461883276-594a12b11cf3?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover; background-position: center;
+            border-radius: 0 0 3rem 3rem; margin-bottom: 4rem;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .input-card {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            border-radius: 2rem; padding: 2.5rem; margin-top: -100px;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        /* Structured HTML Cards */
+        .itinerary-card {
+            background: white; border-radius: 1.5rem; padding: 2.5rem;
+            margin-bottom: 2rem; border-left: 10px solid var(--accent);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: 0.3s;
+        }
+        .itinerary-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        .day-badge { background: var(--accent); color: white; padding: 5px 15px; border-radius: 50px; font-weight: 800; }
+    </style>
+</head>
+<body>
+
+    <div class="hero-banner">
+        <div class="text-center text-white">
+            <h1 class="display-3 fw-800">Plan Your <span style="color: var(--accent);">Adventure</span></h1>
         </div>
-        {% endif %}
     </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                
+                <div class="input-card shadow-lg mb-5">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Where to?</label>
+                                <input type="text" name="location" class="form-control rounded-4 p-3 border-0 bg-light" 
+                                       placeholder="e.g. Kyoto, Japan" value="{{ location }}" required>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Days</label>
+                                <input type="number" name="days" class="form-control rounded-4 p-3 border-0 bg-light" 
+                                       placeholder="1-14" value="{{ days }}" min="1" max="14" required>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-warning w-100 p-3 rounded-4 fw-800 text-white shadow">
+                                    <i class="bi bi-magic me-2"></i> ARCHITECT MY TRIP
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                {% if plan_data %}
+                    <h3 class="fw-800 mb-4 text-center">Your Personalized Itinerary</h3>
+                    {% for day in plan_data %}
+                    <div class="itinerary-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="day-badge">DAY {{ day.count }}</span>
+                            <i class="bi bi-bookmark-heart fs-4 text-muted"></i>
+                        </div>
+                        <div class="mt-3" style="line-height: 1.8;">
+                            {{ day.content|safe }} </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5 opacity-50">
+                        <i class="bi bi-stars display-1"></i>
+                        <p class="mt-3">Enter trip details above to view your custom roadmap.</p>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
