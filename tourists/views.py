@@ -25,7 +25,7 @@ from .serializers import RegisterSerializer, VerifyEmailSerializer, VerifyPhoneS
 from .utils import send_email_otp, send_phone_otp
 
 # --- CONFIGURATION FOR AI ---
-genai.configure(api_key="AIzaSyAJ4bQB-ndwDQc3_DticBo0N6KPh9NQiB4")
+genai.configure(api_key="AIzaSyCN1ENCcvps_l5dNnRTC_6yJUfvvOJAdSg")
 
 # 1. Fetch valid models from Google
 valid_models = []

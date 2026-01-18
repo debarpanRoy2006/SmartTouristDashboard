@@ -4,262 +4,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Travel Companion | Dashboard</title>
+    <title>Travel Companion | Your Journey Starts Here</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
-            --primary-gold: #f39c12;
-            --dark-glass: rgba(15, 15, 15, 0.95);
+            /* Travel Theme Palette */
+            --brand-primary: #264653;   /* Deep Slate Teal */
+            --brand-secondary: #2A9D8F; /* Jungle Green */
+            --brand-accent: #E76F51;    /* Sunset Orange */
+            --brand-sand: #F4F1DE;      /* Warm Sand */
+            --text-dark: #2C3333;
+            --section-grey: #F8F9FA;
+            
+            --font-head: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: linear-gradient(135deg, #f0f4f8 0%, #d7e1ec 100%);
+        body {
+            font-family: var(--font-body);
+            color: var(--text-dark);
             overflow-x: hidden;
+            background-color: white;
         }
 
-        .brand-font { font-family: 'Pacifico', cursive; color: var(--primary-gold); }
-
-        /* --- Live Notification Ticker --- */
-        .ticker-wrap {
-            width: 100%; overflow: hidden; background: var(--dark-glass);
-            color: white; padding: 10px 0; font-size: 0.85rem; z-index: 1001;
+        /* --- Navbar (Floating & Clean) --- */
+        .navbar {
+            padding: 1.5rem 0;
+            transition: all 0.3s;
         }
-        .ticker {
-            display: inline-block; white-space: nowrap; padding-right: 100%;
-            animation: ticker 30s linear infinite;
+        .navbar-brand {
+            font-family: var(--font-head);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            font-size: 1.5rem;
         }
-        @keyframes ticker {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-100%, 0, 0); }
+        .nav-link {
+            font-weight: 600;
+            margin: 0 15px;
+            color: var(--text-dark) !important;
         }
-
-        /* --- Massive Cinematic Header --- */
-        #slideshow-header {
-            position: relative; height: 85vh; min-height: 35rem; width: 100%;
-            overflow: hidden; background-size: cover; background-position: center;
-            transition: background-image 1.5s ease-in-out;
-            border-radius: 0 0 4rem 4rem; margin-top: -20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-        }
-        #slideshow-header .overlay {
-            position: absolute; top: 0; left: 0; height: 100%; width: 100%;
-            background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 0 15px;
-        }
-
-        .typing-text {
-            color: white; font-size: 5.5rem; font-weight: 900; letter-spacing: -2px;
-            text-shadow: 0 10px 30px rgba(0,0,0,0.8); border-right: 6px solid var(--primary-gold);
-            white-space: nowrap; overflow: hidden; width: 0;
-            animation: typing 3s steps(20) forwards, blink 0.7s infinite;
-        }
-        @keyframes typing { from { width: 0 } to { width: 100% } }
-        @keyframes blink { from { border-color: transparent } to { border-color: var(--primary-gold) } }
-
-        /* --- Glass Cards --- */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 2rem;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .glass-card:hover {
-            transform: translateY(-15px);
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-            border: 1px solid var(--primary-gold);
-        }
-
-        /* --- AI Tip Section --- */
-        .tip-section {
-            background: var(--dark-glass);
-            border-radius: 2rem; color: white; padding: 30px;
-            margin: 4rem 0; position: relative; overflow: hidden;
-        }
-        .tip-section::after {
-            content: "AI"; position: absolute; right: -20px; bottom: -20px;
-            font-size: 10rem; opacity: 0.05; font-weight: 900;
-        }
-
-        /* --- Footer --- */
-        .site-footer {
-            background: var(--dark-glass); backdrop-filter: blur(15px);
-            color: #ffffff; padding: 80px 0 40px; margin-top: 5rem;
-            border-top: 4px solid var(--primary-gold);
-        }
+        .nav-link:hover { text-decoration: underline; text-decoration-thickness: 2px; }
         
-        @media (max-width: 992px) {
-            .typing-text { font-size: 3rem; }
-            #slideshow-header { height: 60vh; }
+        .btn-nav-cta {
+            background-color: var(--brand-primary);
+            color: white;
+            border-radius: 50px;
+            padding: 10px 24px;
+            font-size: 0.9rem;
+            transition: transform 0.2s;
         }
+        .btn-nav-cta:hover { transform: translateY(-2px); color: white; box-shadow: 0 4px 12px rgba(38, 70, 83, 0.3); }
+
+        /* --- Hero Section (The "Discord" Impact) --- */
+        .hero-section {
+            background-color: var(--brand-secondary); /* Jungle Green Background */
+            position: relative;
+            padding-top: 100px;
+            padding-bottom: 0;
+            overflow: hidden;
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Abstract topographic lines overlay */
+        .hero-bg-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 80%);
+            z-index: 1;
+        }
+
+        .hero-content {
+            z-index: 10;
+            max-width: 900px;
+            padding: 0 20px;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .hero-title {
+            font-family: var(--font-head);
+            font-weight: 800;
+            font-size: clamp(3rem, 7vw, 6rem); /* Massive responsive text */
+            text-transform: uppercase;
+            line-height: 0.95;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-sub {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            opacity: 0.95;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-btn {
+            border-radius: 50px;
+            padding: 18px 42px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            margin: 10px;
+        }
+
+        .btn-primary-hero {
+            background-color: white;
+            color: var(--brand-primary);
+        }
+        .btn-primary-hero:hover { 
+            color: var(--brand-secondary); 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2); 
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary-hero {
+            background-color: var(--brand-primary);
+            color: white;
+        }
+        .btn-secondary-hero:hover { 
+            background-color: #1e3a45; 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Background Landscape Image at bottom of Hero */
+        .hero-landscape {
+            position: absolute; bottom: -50px; left: 0; width: 100%; height: auto;
+            z-index: 2; pointer-events: none;
+        }
+
+        /* --- Content Blocks (Zig-Zag) --- */
+        .content-block { padding: 120px 0; }
+        .bg-grey { background-color: var(--section-grey); }
+        
+        .block-img {
+            width: 100%;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+        .block-img:hover { transform: scale(1.02) rotate(-1deg); } /* Playful tilt */
+
+        .block-title {
+            font-family: var(--font-head);
+            font-weight: 800;
+            font-size: 3rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: var(--brand-primary);
+        }
+
+        .block-text {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: #555;
+        }
+
+        /* --- Footer (Dark & Heavy) --- */
+        footer {
+            background-color: var(--brand-primary);
+            color: white;
+            padding: 80px 0 40px;
+        }
+        .footer-head {
+            color: var(--brand-accent);
+            font-family: var(--font-head);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            margin-bottom: 1.2rem;
+            letter-spacing: 1px;
+        }
+        .footer-link {
+            color: white;
+            display: block;
+            margin-bottom: 12px;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .footer-link:hover { opacity: 1; text-decoration: underline; }
+
+        /* Utilities */
+        .text-accent { color: var(--brand-accent); }
     </style>
 </head>
 <body>
 
-    <div class="ticker-wrap">
-        <div class="ticker">
-            <span class="px-5"><i class="bi bi-info-circle text-warning"></i> Travel Alert: Weather warning issued for Northern Himalayas.</span>
-            <span class="px-5"><i class="bi bi-star-fill text-warning"></i> AI Tip: Always carry a physical copy of your Digital ID in remote areas.</span>
-            <span class="px-5"><i class="bi bi-shield-fill-check text-success"></i> System Status: All safety monitoring nodes are active.</span>
-        </div>
-    </div>
-
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <nav class="navbar navbar-expand-lg sticky-top bg-white">
         <div class="container">
-            <a class="navbar-brand fw-bold brand-font fs-3" href="{% url 'dashboard' %}">Travel Companion</a>
-            <div class="d-flex align-items-center">
-                <span class="me-3 d-none d-md-block text-muted small"><i class="bi bi-clock"></i> <span id="clock"></span></span>
-                <a class="nav-link fw-bold px-3 border-start" href="{% url 'history' %}">My Stats</a>
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="bi bi-compass-fill text-accent me-2"></i>TravelAI
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+                <i class="bi bi-list fs-2"></i>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navContent">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'explorer' %}">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'safety' %}">Safety Hub</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'itinerary' %}">Planner</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'map' %}">3D Map</a></li>
+                </ul>
+            </div>
+            <div class="d-none d-lg-block">
+                <a href="{% url 'history' %}" class="btn btn-nav-cta fw-bold">Open Dashboard</a>
             </div>
         </div>
     </nav>
 
-    <div id="slideshow-header">
-        <div class="overlay">
-            <h2 class="typing-text">Discover Your Next Adventure</h2>
-            <p class="text-white mt-3 opacity-75 letter-spacing-2">SECURE · SMARTER · SEAMLESS</p>
-        </div>
-    </div>
-
-    <div class="container">
-        
-        <div class="row mb-5 text-center">
-            <div class="col-12">
-                <h4 class="fw-bold">Welcome Back, Explorer!</h4>
-                <p class="text-muted">Your current travel safety status is <span class="badge bg-success">Optimal</span></p>
+    <header class="hero-section">
+        <div class="hero-bg-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">IMAGINE A <br> NEW HORIZON</h1>
+            <p class="hero-sub">
+                Create an invite-only itinerary, explore high-res destinations, and stay safe with real-time AI tracking. Where your next journey belongs.
+            </p>
+            <div class="d-flex flex-wrap justify-content-center">
+                <a href="{% url 'itinerary' %}" class="btn hero-btn btn-primary-hero">
+                    <i class="bi bi-magic"></i> Plan Trip
+                </a>
+                <a href="{% url 'safety' %}" class="btn hero-btn btn-secondary-hero">
+                    Check Safety
+                </a>
             </div>
         </div>
+        <img src="https://res.cloudinary.com/diqkoqmwh/image/upload/v1763819985/Dakhineshwar_Temple_beside_the_Hoogly__West_Bengal_v1azop.jpg" 
+             style="width: 100%; height: 30vh; object-fit: cover; mask-image: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0)); -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0));" 
+             alt="Landscape">
+    </header>
 
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-                <div class="card glass-card p-4 text-center h-100">
-                    <div class="mb-3 text-primary fs-1"><i class="bi bi-camera-reels"></i></div>
-                    <h5 class="fw-bold">Visual Explorer</h5>
-                    <p class="text-muted small">Immerse yourself in high-res destination galleries.</p>
-                    <a href="{% url 'explorer' %}" class="btn btn-outline-primary rounded-pill mt-auto">Browse Gallery</a>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card glass-card p-4 text-center h-100">
-                    <div class="mb-3 text-info fs-1"><i class="bi bi-magic"></i></div>
-                    <h5 class="fw-bold">Itinerary  Planner</h5>
-                    <p class="text-muted small">Let our AI build your perfect day-by-day journey.</p>
-                    <a href="{% url 'itinerary' %}" class="btn btn-info text-white rounded-pill mt-auto">Create Plan</a>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card glass-card p-4 text-center h-100">
-                    <div class="mb-3 text-success fs-1"><i class="bi bi-shield-check"></i></div>
-                    <h5 class="fw-bold">Safety Hub</h5>
-                    <p class="text-muted small">Real-time risk assessment and city-specific tips.</p>
-                    <a href="{% url 'safety' %}" class="btn btn-success rounded-pill mt-auto">Check Safety</a>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card glass-card p-4 text-center h-100">
-                    <div class="mb-3 text-warning fs-1"><i class="bi bi-compass"></i></div>
-                    <h5 class="fw-bold">Nearby Gems</h5>
-                    <p class="text-muted small">Uncover local secrets based on your current GPS location.</p>
-                    <a href="{% url 'nearby' %}" class="btn btn-outline-warning rounded-pill mt-auto">Explore Local</a>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card glass-card p-4 text-center h-100">
-                    <div class="mb-3 text-danger fs-1"><i class="bi bi-activity"></i></div>
-                    <h5 class="fw-bold">Travel Insights</h5>
-                    <p class="text-muted small">Analytics of your past trips and safety experience.</p>
-                    <a href="{% url 'history' %}" class="btn btn-outline-danger rounded-pill mt-auto">Analytics</a>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card glass-card p-4 text-center h-100 bg-dark text-white shadow-lg">
-                    <div class="mb-3 text-warning fs-1"><i class="bi bi-map"></i></div>
-                    <h5 class="fw-bold">Globe Tracker</h5>
-                    <p class="text-light opacity-75 small">An interactive 3D map to pin your memories.</p>
-                    <a href="{% url 'map' %}" class="btn btn-warning fw-bold rounded-pill mt-auto">Open Map</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="tip-section shadow-lg">
+    <section class="content-block bg-white">
+        <div class="container">
             <div class="row align-items-center">
-                <div class="col-md-2 text-center">
-                    <i class="bi bi-lightbulb-fill text-warning display-4"></i>
+                <div class="col-lg-7 mb-5 mb-lg-0">
+                    <img src="https://res.cloudinary.com/diqkoqmwh/image/upload/v1763819339/istockphoto-543179390-612x612_ww2z9k.jpg" alt="Visual Explorer" class="block-img">
                 </div>
-                <div class="col-md-10">
-                    <h5 class="fw-bold">AI Travel Insight of the Day</h5>
-                    <p class="mb-0" id="ai-tip">"Travelling to Jaipur? Visit the Hawa Mahal at sunrise for the best views and least crowds."</p>
+                <div class="col-lg-5 ps-lg-5">
+                    <h2 class="block-title">See it before you seize it.</h2>
+                    <p class="block-text">
+                        Visual Explorer galleries are organized by vibe-based collections. Immerse yourself in high-res previews of mountains, beaches, and cities without the clutter of generic stock photos.
+                    </p>
+                    <a href="{% url 'explorer' %}" class="fw-bold fs-5 text-decoration-none mt-3 d-inline-block text-accent">Browse Galleries <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <footer class="site-footer">
-        <div class="container text-center text-md-start">
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <h5 class="brand-font fs-3">Travel Companion</h5>
-                    <p class="small opacity-75">Your AI-powered shield for safe and smart exploration across India.</p>
-                    <div class="social-icons">
-                        <a href="#"><i class="bi bi-twitter-x"></i></a>
-                        <a href="#"><i class="bi bi-facebook"></i></a>
-                        <a href="#"><i class="bi bi-instagram"></i></a>
+    <section class="content-block bg-grey">
+        <div class="container">
+            <div class="row align-items-center flex-row-reverse">
+                <div class="col-lg-7 mb-5 mb-lg-0">
+                    <div class="bg-white p-5 rounded-4 shadow-lg position-relative" style="transform: rotate(2deg);">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="rounded-circle bg-success p-3 text-white me-3"><i class="bi bi-shield-check fs-3"></i></div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Current Location: Safe</h5>
+                                <small class="text-muted">Updated 2 mins ago</small>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning border-0 rounded-3">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Tip:</strong> Avoid Northern Ridge after 8 PM.
+                        </div>
+                        <div class="d-flex justify-content-between align-items-end mt-4">
+                             <div class="h2 fw-bold mb-0">98%</div>
+                             <div class="text-muted">Safety Score</div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4 text-center">
-                    <h5>Quick Access</h5>
-                    <ul class="list-unstyled small opacity-75">
-                        <li><a href="{% url 'dashboard' %}" class="text-white">Home</a></li>
-                        <li><a href="{% url 'safety' %}" class="text-white">Safety Protocols</a></li>
-                        <li><a href="#" class="text-white">Emergency Contacts</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4 mb-4 text-center text-md-end">
-                    <h5>Emergency Response</h5>
-                    <p class="small text-danger fw-bold"><i class="bi bi-telephone-fill"></i> SOS: 112</p>
-                    <button class="btn btn-sm btn-danger px-4">Instant SOS Alert</button>
+                <div class="col-lg-5 pe-lg-5">
+                    <h2 class="block-title">Where staying safe is just a tap away.</h2>
+                    <p class="block-text">
+                        No need to worry about the unknown. Our Safety Hub provides real-time risk assessment and emergency protocols specific to your GPS location.
+                    </p>
+                    <a href="{% url 'safety' %}" class="fw-bold fs-5 text-decoration-none mt-3 d-inline-block text-accent">View Safety Status <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
-            <hr class="my-4 opacity-25">
-            <p class="text-center small opacity-50">&copy; 2026 Smart Tourist System. All Rights Reserved.</p>
+        </div>
+    </section>
+
+    <section class="content-block bg-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-7 mb-5 mb-lg-0">
+                    <img src="https://res.cloudinary.com/diqkoqmwh/image/upload/v1763820056/istockphoto-519330110-612x612_ihgeqk.jpg" alt="Itinerary" class="block-img">
+                </div>
+                <div class="col-lg-5 ps-lg-5">
+                    <h2 class="block-title">From "Maybe" to "Booked".</h2>
+                    <p class="block-text">
+                        Let AI build your perfect day-by-day journey. Whether you want a relaxed food tour or a high-octane hike, your itinerary adapts to your mood instantly.
+                    </p>
+                    <a href="{% url 'itinerary' %}" class="fw-bold fs-5 text-decoration-none mt-3 d-inline-block text-accent">Create Itinerary <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-grey py-5 text-center">
+        <div class="container py-5">
+            <h2 class="block-title mb-4">Ready to start your adventure?</h2>
+            <a href="{% url 'dashboard' %}" class="btn btn-lg btn-nav-cta px-5 py-3 rounded-pill fs-5">
+                <i class="bi bi-rocket-takeoff-fill me-2"></i> Launch Dashboard
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h2 class="fw-bold mb-4" style="font-family: var(--font-head); letter-spacing: -1px;">TravelAI</h2>
+                    <div class="d-flex gap-4">
+                        <a href="#" class="text-white fs-4"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="text-white fs-4"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-white fs-4"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-6 col-lg-2">
+                    <h6 class="footer-head">Discover</h6>
+                    <a href="#" class="footer-link">Destinations</a>
+                    <a href="#" class="footer-link">Gallery</a>
+                    <a href="#" class="footer-link">3D Map</a>
+                </div>
+                
+                <div class="col-6 col-lg-2">
+                    <h6 class="footer-head">Plan</h6>
+                    <a href="#" class="footer-link">Itinerary AI</a>
+                    <a href="#" class="footer-link">Budget Tool</a>
+                    <a href="#" class="footer-link">Packing Lists</a>
+                </div>
+                
+                <div class="col-6 col-lg-2">
+                    <h6 class="footer-head">Safety</h6>
+                    <a href="#" class="footer-link">Live Alerts</a>
+                    <a href="#" class="footer-link">Emergency Numbers</a>
+                    <a href="#" class="footer-link">Travel Insurance</a>
+                </div>
+                
+                <div class="col-6 col-lg-2">
+                    <h6 class="footer-head">Company</h6>
+                    <a href="#" class="footer-link">About Us</a>
+                    <a href="#" class="footer-link">Careers</a>
+                    <a href="#" class="footer-link">Contact</a>
+                </div>
+            </div>
+            <hr class="border-secondary my-5 opacity-25">
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="opacity-50">&copy; 2026 Smart Tourist System.</small>
+                <button class="btn btn-outline-light rounded-pill btn-sm px-3">Status: Operational</button>
+            </div>
         </div>
     </footer>
 
-    <script>
-        // Hero Slideshow
-        const headerImages = [
-            'https://res.cloudinary.com/diqkoqmwh/image/upload/v1763819339/istockphoto-543179390-612x612_ww2z9k.jpg',
-            'https://res.cloudinary.com/diqkoqmwh/image/upload/v1763819985/Dakhineshwar_Temple_beside_the_Hoogly__West_Bengal_v1azop.jpg',
-            'https://res.cloudinary.com/diqkoqmwh/image/upload/v1763820056/istockphoto-519330110-612x612_ihgeqk.jpg'
-        ];
-        const header = document.getElementById('slideshow-header');
-        let currentIndex = 0;
-        function changeBg() {
-            header.style.backgroundImage = `url('${headerImages[currentIndex]}')`;
-            currentIndex = (currentIndex + 1) % headerImages.length;
-        }
-        setInterval(changeBg, 5000);
-        changeBg();
-
-        // Clock Widget
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString();
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-    </script>
 </body>
 </html>
