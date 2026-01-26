@@ -11,6 +11,10 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 import json
 import re
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 
@@ -351,3 +355,29 @@ def fetch_blockchain_id_details(request, blockchain_id):
         "path_history": "/api/v1/traveler/path/8821/"
     }
     return JsonResponse(rescue_packet)
+
+
+
+def staff_login_view(request):
+    if request.method == 'POST':
+        # Handle the form submission
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            
+            # --- REDIRECT LOGIC ---
+            if user.groups.filter(name='Police').exists():
+                return redirect('police_dashboard')
+            elif user.is_superuser:
+                return redirect('/admin/')
+            else:
+                # Regular users or unknown staff
+                return redirect('home')
+            # ----------------------
+            
+        else:
+            messages.error(request, "Invalid credentials")
+    else:
+        form = AuthenticationForm()
+    return render(request, 'staff_login.html', {'form': form})
