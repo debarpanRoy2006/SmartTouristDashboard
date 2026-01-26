@@ -11,6 +11,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 import json
 import re
+from django.contrib.auth.decorators import login_required
 
 
 import warnings
@@ -333,3 +334,20 @@ def itinerary_page(request):
         'location': location,
         'days': days
     })
+
+def police_dashboard(request):
+    
+    return render(request, 'policedashboard.html')
+def fetch_blockchain_id_details(request, blockchain_id):
+    # Mocking a call to a Smart Contract/Decentralized Ledger
+    # In a real scenario, you'd use web3.py here
+    rescue_packet = {
+        "verified_id": blockchain_id,
+        "aadhar_hash": "67xx-xxxx-xx89",
+        "medical_info": {
+            "blood_group": "O+",
+            "emergency_contact": "+91-98765-43210"
+        },
+        "path_history": "/api/v1/traveler/path/8821/"
+    }
+    return JsonResponse(rescue_packet)

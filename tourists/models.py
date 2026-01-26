@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 import random
+from django.utils import timezone
 
 class UserManager(BaseUserManager):
     """Define a model manager for User model."""
@@ -63,3 +64,22 @@ class User(AbstractUser):
     def generate_email_otp(self):
         self.email_otp = str(random.randint(100000, 999999))
         self.save()
+
+
+class Traveler(models.Model):
+    STATUS_CHOICES = [('GREEN', 'Safe'), ('YELLOW', 'Warning'), ('RED', 'Emergency')]
+    
+    name = models.CharField(max_length=100)
+    blockchain_id = models.CharField(max_length=255, unique=True) # Aadhaar-verified ID
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='GREEN')
+    
+    # Coordinates
+    last_lat = models.DecimalField(max_digits=9, decimal_places=6)
+    last_lon = models.DecimalField(max_digits=9, decimal_places=6)
+    
+    # Heartbeat monitoring
+    last_movement_time = models.DateTimeField(default=timezone.now)
+    is_in_danger_zone = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.name} - {self.status}"

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Police Command Center | Traveler Safety</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    
+    <style>
+        :root { --danger: #ff4757; --safe: #2ed573; --bg: #1e1e2e; }
+        body { background-color: var(--bg); color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+        
+        /* Layout */
+        #main-wrapper { display: flex; height: 100vh; }
+        #sidebar { width: 350px; background: #252539; border-right: 1px solid #3f3f5f; display: flex; flex-direction: column; }
+        #map-container { flex-grow: 1; position: relative; }
+        #map { height: 100%; width: 100%; }
+
+        /* Incident Cards */
+        .incident-card {
+            background: #2d2d44; border-radius: 12px; padding: 15px; margin: 10px;
+            border-left: 5px solid var(--safe); transition: 0.3s;
+        }
+        .incident-card.emergency { border-left-color: var(--danger); animation: pulse-border 1.5s infinite; }
+        @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 71, 87, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); } }
+
+        /* Stats Bar */
+        .stats-header { padding: 20px; background: #1a1a2e; border-bottom: 1px solid #3f3f5f; }
+        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        
+        /* Map Overlays */
+        .map-overlay { position: absolute; top: 20px; right: 20px; z-index: 1000; background: rgba(30, 30, 46, 0.9); padding: 15px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="main-wrapper">
+    <div id="sidebar">
+        <div class="stats-header">
+            <h4 class="fw-bold"><i class="bi bi-shield-lock-fill text-primary"></i> Command Center</h4>
+            <div class="d-flex justify-content-between mt-3 small">
+                <span><span class="status-dot bg-success"></span> Verified: 142</span>
+                <span><span class="status-dot bg-danger"></span> Alerts: 1</span>
+            </div>
+        </div>
+        
+        <div class="p-2 overflow-auto" id="incident-list">
+            <div class="incident-card emergency" id="traveler-debarpan">
+                <div class="d-flex justify-content-between">
+                    <h6 class="fw-bold mb-1">Debarpan (ID: 8821)</h6>
+                    <span class="badge bg-danger">UNRESPONSIVE</span>
+                </div>
+                <p class="small text-light opacity-75 mb-2">Location: Dzüko Valley Forest</p>
+                <div class="d-grid">
+                    <button class="btn btn-sm btn-outline-danger" onclick="viewRescuePacket()">Dispatch Rescue</button>
+                </div>
+            </div>
+
+            <div class="incident-card">
+                <h6 class="fw-bold mb-1">Tourist_092 (ID: 5542)</h6>
+                <p class="small text-light opacity-75 mb-0">Location: Kohima City Center</p>
+                <span class="text-success small"><i class="bi bi-check-circle"></i> Status: Safe</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="map-container">
+        <div id="map"></div>
+        
+        <div class="map-overlay shadow-lg border border-secondary">
+            <h6 class="small fw-bold mb-2">ZONE RISK LEVEL</h6>
+            <div class="small"><i class="bi bi-square-fill text-danger"></i> High Altitude/Remote</div>
+            <div class="small"><i class="bi bi-square-fill text-success"></i> Secured Urban</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Initialize Map centered on Kohima, Nagaland
+    var map = L.map('map').setView([25.6747, 94.1100], 12);
+    
+    // Dark mode map tiles
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO'
+    }).addTo(map);
+
+    // Mock Danger Zone (Dzüko Valley)
+    var dangerZone = L.circle([25.6200, 94.0500], {
+        color: 'red', fillColor: '#f03', fillOpacity: 0.2, radius: 3000
+    }).addTo(map).bindPopup("High Risk Area: Dzüko Valley");
+
+    // Traveler Marker: Debarpan
+    var debarpanMarker = L.circleMarker([25.6210, 94.0510], {
+        radius: 10, fillColor: "#ff4757", color: "#fff", weight: 2, fillOpacity: 1
+    }).addTo(map);
+    
+    debarpanMarker.bindPopup("<b>Emergency: Debarpan</b><br>Unconscious (30m Inactivity)").openPopup();
+
+    // Pulse effect for the emergency marker
+    setInterval(function() {
+        debarpanMarker.setRadius(debarpanMarker.getRadius() === 10 ? 15 : 10);
+    }, 800);
+
+    function viewRescuePacket() {
+        alert("Fetching Medical & Path History from Blockchain...");
+    }
+</script>
+</body>
+</html>

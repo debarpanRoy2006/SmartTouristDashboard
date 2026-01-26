@@ -1,2 +1,12 @@
 Django>=4.2
 djangorestframework
+
+channels>=4.0
+daphne>=4.0
+channels-redis>=4.1
+google-generativeai
+python-dotenv
+web3
+geopy
+markdown
+requests
