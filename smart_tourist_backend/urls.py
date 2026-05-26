@@ -14,6 +14,7 @@ urlpatterns = [
     path('', home, name='home'),
     path('api/v1/auth/', include('tourists.urls')),
     path('', include('tourists.urls')),  # <---- THIS MUST EXIST
+    
    
 # etc...
 

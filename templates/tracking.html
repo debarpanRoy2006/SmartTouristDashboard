@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Tourist | Live Tracking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    
+    <style>
+        :root { --bg: #f8f9fa; --primary: #0984e3; --danger: #ff4757; }
+        body { background-color: var(--bg); font-family: 'Segoe UI', sans-serif; }
+        
+        .tracker-card {
+            background: #fff; border-radius: 20px; padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-top: 50px;
+        }
+
+        /* Custom Toggle Switch */
+        .form-switch .form-check-input { width: 3em; height: 1.5em; cursor: pointer; }
+        .form-switch .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
+        
+        /* SOS Button */
+        .sos-btn {
+            width: 150px; height: 150px; border-radius: 50%;
+            background: linear-gradient(145deg, #ff6b81, var(--danger));
+            color: white; font-weight: bold; font-size: 1.5rem;
+            border: 5px solid #ffeaa7;
+            box-shadow: 0 10px 20px rgba(255, 71, 87, 0.4);
+            transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto;
+        }
+        .sos-btn:active { transform: scale(0.95); box-shadow: 0 5px 10px rgba(255, 71, 87, 0.4); }
+        
+        .status-indicator {
+            height: 12px; width: 12px; border-radius: 50%; display: inline-block;
+            background-color: #ccc; margin-right: 8px;
+        }
+        .status-indicator.active { background-color: #2ed573; box-shadow: 0 0 10px rgba(46, 213, 115, 0.5); }
+    </style>
+</head>
+<body>
+
+<div class="container d-flex justify-content-center">
+    <div class="col-md-6 col-12 tracker-card text-center">
+        
+        <h4 class="fw-bold mb-1">Safety Tracker</h4>
+        <p class="text-secondary small mb-4">Connects directly to Regional Police Command</p>
+
+        <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-4 border">
+            <div class="text-start">
+                <h6 class="mb-0 fw-bold">Live Location Sharing</h6>
+                <small class="text-secondary" id="status-text">Currently Offline</small>
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="trackingToggle" onchange="toggleTracking()">
+            </div>
+        </div>
+
+        <div class="mb-5 small text-secondary">
+            <span class="status-indicator" id="indicator"></span>
+            <span id="coordsDisplay">GPS Standby</span>
+        </div>
+
+        <div class="mb-3">
+            <button class="btn sos-btn" onclick="triggerSOS()">
+                SOS
+            </button>
+            <p class="text-danger small mt-3 fw-bold">Hold for 3 seconds in an emergency</p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // HARDCODED FOR TESTING: In reality, pass this from Django template {{ request.user.traveler.traveler_id }}
+    const TRAVELER_ID = "8821"; 
+    
+    let watchId = null;
+    let isTracking = false;
+
+    function toggleTracking() {
+        const toggle = document.getElementById('trackingToggle');
+        isTracking = toggle.checked;
+
+        if (isTracking) {
+            document.getElementById('status-text').innerText = "Sharing Active";
+            document.getElementById('status-text').classList.add('text-success');
+            document.getElementById('indicator').classList.add('active');
+            startGPS();
+        } else {
+            document.getElementById('status-text').innerText = "Currently Offline";
+            document.getElementById('status-text').classList.remove('text-success');
+            document.getElementById('indicator').classList.remove('active');
+            document.getElementById('coordsDisplay').innerText = "GPS Standby";
+            stopGPS();
+        }
+    }
+
+    function startGPS() {
+        if ("geolocation" in navigator) {
+            // watchPosition triggers every time the GPS detects movement
+            watchId = navigator.geolocation.watchPosition(
+                position => sendLocationToServer(position.coords.latitude, position.coords.longitude, false),
+                error => alert("GPS Error: Please enable location permissions."),
+                { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+            );
+        } else {
+            alert("Geolocation is not supported by your browser.");
+        }
+    }
+
+    function stopGPS() {
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+        }
+    }
+
+    // This is the heartbeat function that pings your Django backend
+    async function sendLocationToServer(lat, lng, isSOS) {
+        document.getElementById('coordsDisplay').innerText = `Lat: ${lat.toFixed(5)} | Lng: ${lng.toFixed(5)}`;
+
+        const payload = {
+            traveler_id: TRAVELER_ID,
+            lat: lat,
+            lng: lng,
+            is_sos: isSOS
+        };
+
+        try {
+            await fetch('/api/update-location/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            console.log("Ping successful.");
+        } catch (error) {
+            console.error("Network error sending location.");
+        }
+    }
+
+    function triggerSOS() {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    sendLocationToServer(position.coords.latitude, position.coords.longitude, true);
+                    alert("SOS SENT! Regional authorities have been alerted.");
+                },
+                error => alert("SOS failed. Unable to get location.")
+            );
+        }
+    }
+</script>
+</body>
+</html>

@@ -135,15 +135,24 @@
             transform: translateY(0);
         }
 
-        .error-message {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
+        .alert-message {
             padding: 12px;
             border-radius: 8px;
             font-size: 14px;
             margin-bottom: 20px;
             text-align: center;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .alert-success {
+            background: rgba(46, 213, 115, 0.1);
+            border: 1px solid rgba(46, 213, 115, 0.3);
+            color: #2ed573;
         }
 
         .footer {
@@ -167,8 +176,16 @@
             <form method="POST">
                 {% csrf_token %}
                 
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert-message {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
                 {% if form.non_field_errors %}
-                    <div class="error-message">
+                    <div class="alert-message alert-error">
                         {{ form.non_field_errors.0 }}
                     </div>
                 {% endif %}
