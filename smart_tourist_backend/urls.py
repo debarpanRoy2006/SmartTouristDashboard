@@ -18,7 +18,7 @@ urlpatterns = [
 # etc...
 
 ]
-
+#All urls
 # --- Add this line at the bottom ---
 # This tells Django how to serve static files during development.
 if settings.DEBUG:

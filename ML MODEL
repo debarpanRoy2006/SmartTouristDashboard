@@ -31,7 +31,7 @@ if __name__=='__main__':
     generate_data()
 
 
-!pip install haversine
+
 
 import pandas as pd
 from sklearn.ensemble import IsolationForest
