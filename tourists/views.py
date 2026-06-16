@@ -11,6 +11,10 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 import json
 import re
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 
@@ -334,10 +338,54 @@ def itinerary_page(request):
         'location': location,
         'days': days
     })
+import json
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Traveler
 
+@login_required(login_url='/staff-login/')
 def police_dashboard(request):
+    # 1. Security Check: Ensure the user is a registered police authority
+    if not hasattr(request.user, 'authorityprofile'):
+        return redirect('home')
+        
+    profile = request.user.authorityprofile
+    jurisdiction = profile.jurisdiction
     
-    return render(request, 'policedashboard.html')
+    # 2. Fetch travelers only in this officer's jurisdiction
+    travelers = Traveler.objects.filter(current_region=jurisdiction).order_by('-last_updated')
+    
+    # 3. Calculate Stats
+    safe_count = travelers.filter(status='safe').count()
+    alert_count = travelers.exclude(status='safe').count()
+    
+    # 4. Prepare data for the Leaflet Map (JavaScript)
+    map_data = []
+    for t in travelers:
+        if t.last_latitude and t.last_longitude:
+            map_data.append({
+                'id': t.traveler_id,
+                'name': t.name,
+                'lat': float(t.last_latitude),
+                'lng': float(t.last_longitude),
+                'status': t.status,
+                'location': t.location_name or "Unknown Location",
+                'note': t.status_note or "No recent alerts"
+            })
+
+    context = {
+        'department_name': profile.department_name,
+        'jurisdiction': jurisdiction,
+        'travelers': travelers,
+        'safe_count': safe_count,
+        'alert_count': alert_count,
+        'map_data_json': json.dumps(map_data) # Passes data safely to JavaScript
+    }
+    
+    return render(request, 'policedashboard.html', context)
+
+    
+    
 def fetch_blockchain_id_details(request, blockchain_id):
     # Mocking a call to a Smart Contract/Decentralized Ledger
     # In a real scenario, you'd use web3.py here
@@ -351,3 +399,131 @@ def fetch_blockchain_id_details(request, blockchain_id):
         "path_history": "/api/v1/traveler/path/8821/"
     }
     return JsonResponse(rescue_packet)
+<<<<<<< HEAD
+=======
+
+
+
+def staff_login_view(request):
+    # If already logged in, redirect them immediately to their respective dashboards
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            return redirect('adminpage') 
+        elif hasattr(request.user, 'authorityprofile'):
+            return redirect('police_dashboard')
+
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            
+            # --- REDIRECT LOGIC ---
+            if user.is_superuser:
+                # Redirect to your custom Super Admin panel
+                return redirect('adminpage') 
+            elif hasattr(user, 'authorityprofile'):
+                # Redirect to the Regional Police Command Center
+                return redirect('police_dashboard')
+            else:
+                # Regular users shouldn't use this portal
+                messages.error(request, "Access Denied: You lack Authority clearance.")
+                return redirect('home') # Or wherever regular users go
+                
+        else:
+            messages.error(request, "Invalid Badge ID or Secure Access Key.")
+    else:
+        form = AuthenticationForm()
+        
+    return render(request, 'staff_login.html', {'form': form})
+import json
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.csrf import csrf_exempt
+from .models import AuthorityProfile
+User = get_user_model()
+# --- SECURITY HELPER ---
+def is_superuser(user):
+    """Check if the user is a master admin"""
+    return user.is_active and user.is_superuser
+
+# --- 1. PAGE RENDER VIEW ---
+@user_passes_test(is_superuser, login_url='/staff-login/')
+def adminpage(request):
+    """
+    Renders the Super Admin dashboard.
+    Fetches all active authority profiles to populate the HTML table.
+    """
+    # Using select_related to optimize the database query for the linked User model
+    authorities = AuthorityProfile.objects.select_related('user').all().order_by('-id')
+    
+    context = {
+        'authorities': authorities
+    }
+    return render(request, 'adminpage.html', context)
+
+
+import uuid
+import random
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+def tracking_page(request):
+    return render(request, 'tracking.html')
+# ... (keep your adminpage view the same) ...
+
+@csrf_exempt
+@user_passes_test(is_superuser, login_url='/staff-login/')
+def create_authority_account(request):
+    """
+    API endpoint that receives JSON data from the adminpage form,
+    securely hashes the password, and provisions the account.
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            department_name = data.get('department_name')
+            jurisdiction = data.get('jurisdiction')
+            username = data.get('username')
+            password = data.get('password')
+
+            if not all([department_name, jurisdiction, username, password]):
+                return JsonResponse({"error": "All fields are required."}, status=400)
+
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({"error": f"Username '{username}' is already in use."}, status=400)
+
+            # --- THE FIX: Generate missing required fields for your custom model ---
+            official_email = f"{username}@police.smarttourist.gov"
+            # Generate a unique fake phone and ID just to satisfy your Traveler database constraints
+            unique_phone = str(random.randint(1000000000, 9999999999)) 
+            unique_id = f"AUTH-{uuid.uuid4().hex[:8].upper()}"
+
+            # Pass the email first (as required by your custom UserManager) 
+            # and include the other required extra_fields.
+            user = User.objects.create_user(
+                email=official_email,
+                password=password,
+                username=username,
+                phone=unique_phone,
+                passport_aadhaar=unique_id
+            )
+
+            # 2. Create the linked Authority Profile
+            AuthorityProfile.objects.create(
+                user=user,
+                jurisdiction=jurisdiction,
+                department_name=department_name
+            )
+
+            return JsonResponse({
+                "success": f"Account for {department_name} successfully provisioned!"
+            }, status=201)
+
+        except Exception as e:
+            return JsonResponse({"error": f"Server error: {str(e)}"}, status=500)
+            
+    return JsonResponse({"error": "Method not allowed. Use POST."}, status=405)
+>>>>>>> dedec42e8b5fd72ac9b91b686e17a3e295fc0a71

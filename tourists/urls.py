@@ -15,6 +15,10 @@ urlpatterns = [
     path('history/', views.history_stats, name='history'),
     path('map/', views.map_page, name='map'),
     path('police-dashboard/', views.police_dashboard, name='police_dashboard'),
+    path('staff-login/', views.staff_login_view, name='staff_login'),\
+    path('adminpage/', views.adminpage, name='adminpage'),
+    path('create-authority-account/', views.create_authority_account, name='create_authority_account'),
+    path('tracking/', views.tracking_page, name='tracking'),
 
     # API Authentication Views (Keep as .as_view() for class-based views)
     path('api/v1/auth/register/', views.RegisterView.as_view(), name='register'),

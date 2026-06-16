@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Super Admin | Authority Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    
+    <style>
+        :root { --primary: #0984e3; --bg: #11111a; --panel-bg: #1a1a2e; --card-bg: #22223b; }
+        body { background-color: var(--bg); color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Layout */
+        #wrapper { display: flex; min-height: 100vh; }
+        #sidebar { width: 280px; background: var(--panel-bg); border-right: 1px solid #2d2d44; padding: 20px; }
+        #content { flex-grow: 1; padding: 40px; }
+
+        /* Form & Cards */
+        .admin-card { background: var(--card-bg); border-radius: 12px; padding: 25px; border: 1px solid #2d2d44; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .form-control-dark, .form-select-dark { 
+            background-color: #1a1a2e; color: #fff; border: 1px solid #3f3f5f; 
+        }
+        .form-control-dark:focus, .form-select-dark:focus {
+            background-color: #1a1a2e; color: #fff; border-color: var(--primary); box-shadow: none;
+        }
+        
+        /* Table */
+        .table-dark { --bs-table-bg: transparent; --bs-table-border-color: #3f3f5f; }
+        .table-dark th { color: #a0a0b5; font-size: 0.85rem; letter-spacing: 1px; }
+        
+        /* Alerts */
+        .alert-custom { display: none; padding: 12px; border-radius: 8px; font-size: 14px; margin-top: 15px; }
+        .alert-success-custom { background: rgba(46, 213, 115, 0.1); border: 1px solid rgba(46, 213, 115, 0.3); color: #2ed573; }
+        .alert-error-custom { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    </style>
+</head>
+<body>
+
+<div id="wrapper">
+    <div id="sidebar">
+        <h5 class="fw-bold mb-4 text-light"><i class="bi bi-hdd-network text-primary me-2"></i>ROOT SYSTEM</h5>
+        <nav class="nav flex-column">
+            <a class="nav-link text-light bg-primary bg-opacity-25 rounded mb-2" href="#"><i class="bi bi-person-badge me-2"></i> Authority Access</a>
+            <a class="nav-link text-secondary mb-2" href="#"><i class="bi bi-database me-2"></i> Global Backups</a>
+            <a class="nav-link text-secondary mb-2" href="#"><i class="bi bi-activity me-2"></i> API Traffic</a>
+            <a class="nav-link text-danger mt-4" href="{% url 'home' %}"><i class="bi bi-box-arrow-left me-2"></i> Exit System</a>
+        </nav>
+    </div>
+
+    <div id="content">
+        <div class="mb-5">
+            <h2 class="fw-bold">Authority Account Management</h2>
+            <p class="text-secondary">Generate secure login credentials for regional police departments.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-5 mb-4">
+                <div class="admin-card">
+                    <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-person-plus-fill me-2"></i>Create New Account</h5>
+                    <form id="createAccountForm" onsubmit="handleFormSubmit(event)">
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary">DEPARTMENT NAME</label>
+                            <input type="text" class="form-control form-control-dark" id="deptName" placeholder="e.g., Kohima Central" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary">ASSIGNED JURISDICTION</label>
+                            <select class="form-select form-select-dark" id="jurisdiction" required>
+                                <option value="" disabled selected>Select Region...</option>
+                                <option value="Nagaland">Nagaland</option>
+                                <option value="Assam">Assam</option>
+                                <option value="Meghalaya">Meghalaya</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary">LOGIN USERNAME</label>
+                            <input type="text" class="form-control form-control-dark" id="username" placeholder="officer_name" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small text-secondary">TEMPORARY PASSWORD</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control form-control-dark" id="password" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="generatePassword()"><i class="bi bi-magic"></i></button>
+                            </div>
+                            <div class="form-text text-secondary small">Password will be hashed upon server receipt.</div>
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="btn btn-primary w-100 fw-bold">Provision Account</button>
+                    </form>
+                    
+                    <div id="alertSuccess" class="alert-custom alert-success-custom"></div>
+                    <div id="alertError" class="alert-custom alert-error-custom"></div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="admin-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-card-list me-2"></i>Active Provisioned Accounts</h5>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>DEPARTMENT</th>
+                                    <th>JURISDICTION</th>
+                                    <th>USERNAME</th>
+                                    <th>STATUS</th>
+                                    <th>ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accountsTableBody">
+                                {% for auth in authorities %}
+                                <tr>
+                                    <td>{{ auth.department_name }}</td>
+                                    <td><span class="badge bg-secondary">{{ auth.jurisdiction }}</span></td>
+                                    <td><code class="text-light">{{ auth.user.username }}</code></td>
+                                    <td><span class="text-success small"><i class="bi bi-circle-fill me-1"></i>Active</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-secondary py-4">No authority accounts provisioned yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Generate a strong temporary password
+    function generatePassword() {
+        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        let password = "";
+        for (let i = 0; i < 12; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        const pwdInput = document.getElementById('password');
+        pwdInput.value = password;
+        pwdInput.type = "text"; 
+        setTimeout(() => pwdInput.type = "password", 3000); 
+    }
+
+    // 2. Send the form data to your Django API
+    async function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('submitBtn');
+        const alertSuccess = document.getElementById('alertSuccess');
+        const alertError = document.getElementById('alertError');
+        
+        // Hide previous alerts
+        alertSuccess.style.display = 'none';
+        alertError.style.display = 'none';
+        
+        // Gather data
+        const payload = {
+            department_name: document.getElementById('deptName').value,
+            jurisdiction: document.getElementById('jurisdiction').value,
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+        };
+
+        btn.disabled = true;
+        btn.innerText = "Provisioning...";
+
+        try {
+            // Note: Ensure the URL matches exactly what you named the path in urls.py
+            const response = await fetch('/create-authority-account/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Show success and reload page to reflect new data in the Django table
+                alertSuccess.innerText = data.success || "Account created successfully!";
+                alertSuccess.style.display = 'block';
+                document.getElementById('createAccountForm').reset();
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                // Show error (e.g., username already taken)
+                alertError.innerText = data.error || "Failed to create account.";
+                alertError.style.display = 'block';
+            }
+        } catch (error) {
+            alertError.innerText = "Network error. Please try again.";
+            alertError.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Provision Account";
+        }
+    }
+</script>
+</body>
+</html>

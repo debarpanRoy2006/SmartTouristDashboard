@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Tourist | Live Security</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --bg-dark: #0f1015; 
+            --card-bg: rgba(25, 26, 35, 0.7);
+            --primary: #00f2fe; 
+            --safe-green: #2ed573;
+            --danger-red: #ff4757; 
+            --text-main: #ffffff;
+            --text-muted: #8e93a6;
+        }
+        
+        body { 
+            background-color: var(--bg-dark); 
+            font-family: 'Poppins', sans-serif; 
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient Background Glow */
+        .bg-glow {
+            position: absolute; width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.15) 0%, rgba(0,0,0,0) 70%);
+            top: -50px; right: -50px; z-index: -1;
+        }
+        .bg-glow.danger { background: radial-gradient(circle, rgba(255, 71, 87, 0.15) 0%, rgba(0,0,0,0) 70%); top: auto; bottom: -50px; left: -50px; }
+
+        /* Glassmorphism Card */
+        .tracker-card {
+            background: var(--card-bg); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px; 
+            padding: 40px 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        /* Custom Toggle Switch */
+        .tracking-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+        }
+        .form-switch .form-check-input { 
+            width: 3.5em; height: 1.75em; cursor: pointer; 
+            background-color: #2a2b36; border-color: transparent;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .form-switch .form-check-input:checked { 
+            background-color: var(--safe-green); 
+            border-color: var(--safe-green); 
+            box-shadow: 0 0 15px rgba(46, 213, 115, 0.4);
+        }
+        
+        /* Coordinate HUD Display */
+        .coord-display {
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255,255,255,0.02);
+            transition: 0.3s;
+        }
+        .coord-display.active { color: var(--primary); border-color: rgba(0, 242, 254, 0.3); }
+        
+        /* Premium SOS Button */
+        .sos-wrapper { position: relative; margin: 40px auto 20px; width: 160px; height: 160px; }
+        
+        .sos-btn {
+            width: 100%; height: 100%; border-radius: 50%;
+            background: linear-gradient(145deg, #ff6b81, #d63031);
+            color: white; font-weight: 700; font-size: 2rem; letter-spacing: 2px;
+            border: none;
+            box-shadow: 0 15px 35px rgba(255, 71, 87, 0.4), inset 0 5px 15px rgba(255,255,255,0.3);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; z-index: 10;
+        }
+        
+        .sos-btn:active { 
+            transform: scale(0.92); 
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3), inset 0 5px 20px rgba(0,0,0,0.4); 
+        }
+
+        /* Pulsing Radar Rings */
+        .radar-ring {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%; border: 2px solid var(--danger-red);
+            opacity: 0; z-index: 1; pointer-events: none;
+        }
+        .sos-wrapper:hover .radar-ring { animation: radarPulse 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1); }
+        .sos-wrapper:hover .radar-ring:nth-child(2) { animation-delay: 0.5s; }
+        
+        @keyframes radarPulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        /* Status Dot */
+        .status-dot {
+            height: 10px; width: 10px; border-radius: 50%; display: inline-block;
+            background-color: #4a4b59; margin-right: 8px; transition: 0.3s;
+        }
+        .status-dot.active { 
+            background-color: var(--safe-green); 
+            box-shadow: 0 0 12px var(--safe-green); 
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+<div class="bg-glow danger"></div>
+
+<div class="container d-flex justify-content-center px-4">
+    <div class="tracker-card text-center">
+        
+        <div class="mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-dark mb-3" style="width: 60px; height: 60px; border: 1px solid rgba(255,255,255,0.1);">
+                <i class="bi bi-shield-check fs-3" style="color: var(--primary);"></i>
+            </div>
+            <h3 class="fw-bold mb-1">Safety Tracker</h3>
+            <p class="small text-muted mb-0">Secure Uplink to Regional Command</p>
+        </div>
+
+        <div class="tracking-panel d-flex justify-content-between align-items-center p-3 mb-4">
+            <div class="text-start">
+                <h6 class="mb-1 fw-semibold text-light">Live Broadcasting</h6>
+                <div class="d-flex align-items-center">
+                    <span class="status-dot" id="indicator"></span>
+                    <small id="status-text" class="text-muted fw-medium">System Offline</small>
+                </div>
+            </div>
+            <div class="form-check form-switch m-0 p-0 d-flex align-items-center">
+                <input class="form-check-input m-0" type="checkbox" id="trackingToggle" onchange="toggleTracking()">
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <div id="coordsDisplay" class="coord-display">
+                <i class="bi bi-geo-alt me-2"></i>AWAITING GPS SIGNAL
+            </div>
+        </div>
+
+        <div class="sos-wrapper">
+            <div class="radar-ring"></div>
+            <div class="radar-ring"></div>
+            <button class="btn sos-btn" onclick="triggerSOS()">SOS</button>
+        </div>
+        <p class="text-muted small mt-4 mb-0"><i class="bi bi-info-circle me-1"></i>Tap in case of immediate emergency</p>
+
+    </div>
+</div>
+
+<script>
+    // HARDCODED FOR TESTING: In reality, pass this from Django template {{ request.user.traveler.traveler_id }}
+    const TRAVELER_ID = "8821"; 
+    
+    let watchId = null;
+    let isTracking = false;
+
+    function toggleTracking() {
+        const toggle = document.getElementById('trackingToggle');
+        const statusText = document.getElementById('status-text');
+        const indicator = document.getElementById('indicator');
+        const coordDisplay = document.getElementById('coordsDisplay');
+        
+        isTracking = toggle.checked;
+
+        if (isTracking) {
+            statusText.innerText = "Transmitting Location";
+            statusText.style.color = "var(--safe-green)";
+            indicator.classList.add('active');
+            coordDisplay.classList.add('active');
+            coordDisplay.innerHTML = '<i class="bi bi-radar me-2"></i>ACQUIRING SATELLITE...';
+            startGPS();
+        } else {
+            statusText.innerText = "System Offline";
+            statusText.style.color = "var(--text-muted)";
+            indicator.classList.remove('active');
+            coordDisplay.classList.remove('active');
+            coordDisplay.innerHTML = '<i class="bi bi-geo-alt me-2"></i>AWAITING GPS SIGNAL';
+            stopGPS();
+        }
+    }
+
+    function startGPS() {
+        if ("geolocation" in navigator) {
+            watchId = navigator.geolocation.watchPosition(
+                position => sendLocationToServer(position.coords.latitude, position.coords.longitude, false),
+                error => alert("GPS Error: Please enable location permissions in your browser settings."),
+                { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+            );
+        } else {
+            alert("Geolocation is not supported by your device.");
+        }
+    }
+
+    function stopGPS() {
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+        }
+    }
+
+    // Ping Django backend
+    async function sendLocationToServer(lat, lng, isSOS) {
+        // Update the HUD
+        document.getElementById('coordsDisplay').innerHTML = `<i class="bi bi-crosshair me-2"></i>${lat.toFixed(5)} &deg;N, ${lng.toFixed(5)} &deg;E`;
+
+        const payload = {
+            traveler_id: TRAVELER_ID,
+            lat: lat,
+            lng: lng,
+            is_sos: isSOS
+        };
+
+        try {
+            await fetch('/api/update-location/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            console.log("Secure ping sent.");
+        } catch (error) {
+            console.error("Network error sending location.");
+        }
+    }
+
+    function triggerSOS() {
+        // Add a visual flash to the screen
+        document.body.style.backgroundColor = "rgba(255, 71, 87, 0.2)";
+        setTimeout(() => document.body.style.backgroundColor = "var(--bg-dark)", 300);
+
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    sendLocationToServer(position.coords.latitude, position.coords.longitude, true);
+                    alert("⚠️ SOS BROADCAST SENT. Regional authorities have your exact coordinates.");
+                },
+                error => alert("SOS failed. We could not read your GPS coordinates.")
+            );
+        }
+    }
+</script>
+</body>
+</html>
