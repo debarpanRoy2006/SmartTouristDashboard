@@ -4,398 +4,861 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Smart Tourist Safety</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Login – TravelBuddy | Your Journey Starts Here</title>
+    <meta name="description" content="Sign in to TravelBuddy to explore safe destinations, build AI-powered itineraries, and travel with confidence across India.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Georgia&display=swap" rel="stylesheet">
-    
+
     <style>
-        /* --- BACKGROUND & BODY --- */
+        /* ============================================= */
+        /* RESET & DESIGN TOKENS                        */
+        /* ============================================= */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-deep: #0b1a2b;
+            --bg-panel: #0f2136;
+            --bg-input: #132d47;
+            --bg-input-focus: #17385a;
+            --accent-teal: #2dd4a8;
+            --accent-teal-hover: #24b892;
+            --accent-teal-glow: rgba(45, 212, 168, 0.25);
+            --text-primary: #e8edf3;
+            --text-secondary: #8b9ab5;
+            --text-muted: #5a6e87;
+            --text-label: #6b7f99;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-input: rgba(255, 255, 255, 0.1);
+            --danger: #f87171;
+
+            --font-display: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html { height: 100%; }
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: var(--font-body);
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
             min-height: 100vh;
-            padding: 20px;
-        }
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #e6e7e9; 
-            z-index: -1;
-            filter: blur(4px);
-        }
-
-        /* --- DISCORD-STYLE CARD --- */
-        .auth-container-card {
             display: flex;
-            background: rgba(253, 250, 250, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            border-top: 4px solid #f39c12;
-            max-width: 900px;
-            width: 100%;
-            min-height: 600px;
-            overflow: hidden;
-            position: relative;
+            align-items: stretch;
+            overflow-x: hidden;
         }
 
-        /* Left Side: Forms */
-        .auth-form-section {
-            flex: 1.3;
-            padding: 3rem;
+        /* ============================================= */
+        /* MAIN SPLIT LAYOUT                            */
+        /* ============================================= */
+        .auth-wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* --- LEFT: Hero Panel --- */
+        .hero-panel {
+            flex: 1;
             position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-end;
+            padding: 48px;
+            overflow: hidden;
+            min-height: 100vh;
         }
 
-        /* Right Side: QR */
-        .auth-qr-section {
-            flex: 0.7;
-            background: rgba(243, 156, 18, 0.08);
+        .hero-panel__bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://res.cloudinary.com/diqkoqmwh/image/upload/v1763812783/Alleppey_cj7uek.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+
+        .hero-panel__overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to top,
+                rgba(11, 26, 43, 0.95) 0%,
+                rgba(11, 26, 43, 0.6) 40%,
+                rgba(11, 26, 43, 0.3) 100%
+            );
+            z-index: 1;
+        }
+
+        .hero-panel__content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-panel__brand {
+            position: absolute;
+            top: 40px;
+            left: 48px;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--accent-teal);
+            text-decoration: none;
+        }
+        .hero-panel__brand i { font-size: 1.25rem; }
+
+        .hero-panel__title {
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: clamp(2.5rem, 4vw, 3.5rem);
+            line-height: 1.05;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+        .hero-panel__title .highlight {
+            color: var(--accent-teal);
+        }
+
+        .hero-panel__subtitle {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.6;
+            max-width: 420px;
+            margin-bottom: 36px;
+        }
+
+        /* Feature Badges */
+        .feature-badges {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .feature-badge {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-md);
+            transition: transform var(--transition), background var(--transition);
+        }
+        .feature-badge:hover {
+            transform: translateX(6px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .feature-badge__icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .feature-badge__icon.green {
+            background: rgba(45, 212, 168, 0.18);
+            color: var(--accent-teal);
+        }
+        .feature-badge__icon.orange {
+            background: rgba(251, 191, 36, 0.18);
+            color: #fbbf24;
+        }
+        .feature-badge__icon.blue {
+            background: rgba(96, 165, 250, 0.18);
+            color: #60a5fa;
+        }
+        .feature-badge__text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.85);
+        }
+
+        /* --- RIGHT: Form Panel --- */
+        .form-panel {
+            flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 2rem;
+            padding: 48px;
+            position: relative;
+            background: var(--bg-panel);
+            max-width: 560px;
+        }
+
+        .form-panel__home-link {
+            position: absolute;
+            top: 32px;
+            right: 40px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color var(--transition);
+        }
+        .form-panel__home-link:hover { color: var(--accent-teal); }
+
+        .form-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-container__header h1 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.85rem;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .form-container__header p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-bottom: 32px;
+        }
+
+        /* ============================================= */
+        /* FORM ELEMENTS                                */
+        /* ============================================= */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-label);
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 13px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-input);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 0.92rem;
+            transition: all var(--transition);
+            outline: none;
+        }
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+        .form-group input:focus {
+            border-color: var(--accent-teal);
+            background: var(--bg-input-focus);
+            box-shadow: 0 0 0 3px var(--accent-teal-glow);
+        }
+
+        .form-group__row {
+            display: flex;
+            gap: 12px;
+        }
+        .form-group__row .form-group { flex: 1; }
+
+        .forgot-link {
+            display: block;
+            text-align: right;
+            margin-top: 6px;
+            font-size: 0.8rem;
+            color: var(--accent-teal);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color var(--transition);
+        }
+        .forgot-link:hover { color: var(--accent-teal-hover); }
+
+        /* Primary CTA Button */
+        .btn-cta {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent-teal);
+            color: var(--bg-deep);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-cta:hover {
+            background: var(--accent-teal-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--accent-teal-glow);
+        }
+        .btn-cta:active { transform: translateY(0); }
+
+        /* Divider */
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-subtle);
+        }
+        .auth-divider span {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* Google OAuth Button */
+        .btn-google {
+            width: 100%;
+            padding: 13px;
+            background: transparent;
+            border: 1px solid var(--border-input);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all var(--transition);
+        }
+        .btn-google:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.18);
+            transform: translateY(-1px);
+        }
+        .btn-google svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Toggle Link */
+        .auth-toggle {
             text-align: center;
-            border-left: 1px solid rgba(0,0,0,0.05);
+            margin-top: 28px;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+        .auth-toggle a {
+            color: var(--accent-teal);
+            font-weight: 600;
+            text-decoration: none;
+            transition: color var(--transition);
+        }
+        .auth-toggle a:hover { color: var(--accent-teal-hover); text-decoration: underline; }
+
+        /* Alert Messages */
+        .api-alert {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+            font-weight: 500;
+            animation: slideDown 0.3s ease;
+        }
+        .api-alert.error {
+            background: rgba(248, 113, 113, 0.12);
+            color: var(--danger);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+        }
+        .api-alert.success {
+            background: rgba(45, 212, 168, 0.12);
+            color: var(--accent-teal);
+            border: 1px solid rgba(45, 212, 168, 0.2);
         }
 
-        @media (max-width: 768px) {
-            .auth-container-card { flex-direction: column; min-height: auto; }
-            .auth-qr-section { padding: 2rem; border-left: none; border-top: 1px solid #eee; }
+        /* OTP Input */
+        .otp-input {
+            text-align: center;
+            font-size: 1.5rem !important;
+            letter-spacing: 0.4em;
+            font-family: var(--font-display) !important;
+            font-weight: 700 !important;
         }
 
-        /* --- TYPOGRAPHY & ELEMENTS --- */
-        .brand-font {
-            font-family: 'Georgia', serif;
-            font-weight: bold;
-            background: linear-gradient(90deg, #e67e22, #f39c12);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .otp-helper {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            margin-top: 8px;
         }
-        .namaste-img {
-            width: 100px; height: 100px; object-fit: cover;
-            border-radius: 50%; border: 4px solid white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-        }
-        .btn-primary { background-color: #f39c12; border-color: #f39c12; }
-        .btn-primary:hover { background-color: #e67e22; border-color: #e67e22; }
-        .form-control:focus { border-color: #f39c12; box-shadow: 0 0 0 0.25rem rgba(243, 156, 18, 0.25); }
-        a { color: #e67e22; text-decoration: none; }
 
-        /* Doodles */
-        .doodle { position: absolute; opacity: 0.3; width: 40px; z-index: 0; color: #f39c12; }
-        .doodle-1 { top: 20px; left: 20px; }
-        .doodle-2 { top: 20px; right: 20px; }
-        
-        .qr-box {
-            background: white; padding: 15px; border-radius: 10px;
-            border: 1px solid #ddd; font-size: 7rem; color: #333;
-            line-height: 1; margin-bottom: 1rem;
+        /* Success View */
+        .success-view {
+            text-align: center;
+            padding: 40px 0;
+        }
+        .success-view .success-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(45, 212, 168, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2.5rem;
+            color: var(--accent-teal);
+            animation: pulseSuccess 1.5s ease infinite;
+        }
+        .success-view h3 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--accent-teal);
+            margin-bottom: 8px;
+        }
+        .success-view p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Hidden Helper */
+        .d-none { display: none !important; }
+
+        /* ============================================= */
+        /* ANIMATIONS                                   */
+        /* ============================================= */
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseSuccess {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(45, 212, 168, 0.3); }
+            50% { box-shadow: 0 0 0 12px rgba(45, 212, 168, 0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-panel__content { animation: fadeInUp 0.8s ease 0.2s both; }
+        .form-container { animation: fadeInUp 0.6s ease 0.3s both; }
+
+        .feature-badge:nth-child(1) { animation: fadeInUp 0.5s ease 0.5s both; }
+        .feature-badge:nth-child(2) { animation: fadeInUp 0.5s ease 0.65s both; }
+        .feature-badge:nth-child(3) { animation: fadeInUp 0.5s ease 0.8s both; }
+
+        /* ============================================= */
+        /* RESPONSIVE                                   */
+        /* ============================================= */
+        @media (max-width: 900px) {
+            .auth-wrapper {
+                flex-direction: column;
+            }
+            .hero-panel {
+                min-height: 45vh;
+                padding: 32px 28px;
+            }
+            .hero-panel__brand {
+                top: 24px;
+                left: 28px;
+            }
+            .hero-panel__title {
+                font-size: 2rem;
+            }
+            .feature-badges { flex-direction: row; overflow-x: auto; gap: 10px; }
+            .feature-badge { min-width: 240px; padding: 12px 16px; }
+
+            .form-panel {
+                max-width: 100%;
+                padding: 32px 24px;
+            }
+            .form-panel__home-link {
+                top: 16px;
+                right: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-panel { padding: 24px 20px; min-height: 38vh; }
+            .hero-panel__brand { top: 16px; left: 20px; }
+            .form-panel { padding: 28px 20px; }
+            .feature-badges { display: none; }
         }
     </style>
 </head>
 <body>
 
-    <a href="/" class="position-absolute top-0 start-0 m-4 fw-bold text-decoration-none">
-        <i class="bi bi-arrow-left me-1"></i> Back to Home
-    </a>
+<div class="auth-wrapper">
+    <!-- =============================== -->
+    <!-- LEFT: Hero Panel               -->
+    <!-- =============================== -->
+    <div class="hero-panel">
+        <div class="hero-panel__bg"></div>
+        <div class="hero-panel__overlay"></div>
 
-    <div class="auth-container-card">
-        
-        <div class="auth-form-section">
-            <div class="doodle doodle-1"><i class="bi bi-stars"></i></div>
-            <div class="doodle doodle-2"><i class="bi bi-geo-alt-fill"></i></div>
+        <a href="/" class="hero-panel__brand">
+            <i class="bi bi-geo-alt-fill"></i> TravelBuddy
+        </a>
 
-            <div class="text-center mb-3">
-                <img src="{% static 'hawa_mahal.jpg' %}" class="namaste-img" alt="Icon">
-                <h2 id="formTitle" class="brand-font mb-1">Namaste India</h2>
-                <p id="welcomeMessage" class="text-muted small">Welcome! Please sign in to continue.</p>
+        <div class="hero-panel__content">
+            <h2 class="hero-panel__title">
+                Your Journey<br>
+                <span class="highlight">Starts Here.</span>
+            </h2>
+            <p class="hero-panel__subtitle">
+                Explore safe destinations, build AI-powered itineraries, and travel with confidence across India.
+            </p>
+
+            <div class="feature-badges">
+                <div class="feature-badge">
+                    <div class="feature-badge__icon green">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <span class="feature-badge__text">Real-time safety tracking & SOS alerts</span>
+                </div>
+                <div class="feature-badge">
+                    <div class="feature-badge__icon orange">
+                        <i class="bi bi-stars"></i>
+                    </div>
+                    <span class="feature-badge__text">AI-generated smart itineraries</span>
+                </div>
+                <div class="feature-badge">
+                    <div class="feature-badge__icon blue">
+                        <i class="bi bi-compass"></i>
+                    </div>
+                    <span class="feature-badge__text">Live explorer with destination intel</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =============================== -->
+    <!-- RIGHT: Form Panel              -->
+    <!-- =============================== -->
+    <div class="form-panel">
+        <a href="/" class="form-panel__home-link">
+            <i class="bi bi-arrow-left"></i> Home
+        </a>
+
+        <div class="form-container">
+            <!-- Header -->
+            <div class="form-container__header">
+                <h1 id="formTitle">Welcome back</h1>
+                <p id="welcomeMessage">Sign in to continue your adventure</p>
             </div>
 
-            <div id="apiMessage" class="alert d-none py-2 small text-center" role="alert"></div>
+            <!-- API Alert -->
+            <div class="api-alert" id="apiMessage" role="alert"></div>
 
+            <!-- ======================== -->
+            <!-- LOGIN FORM              -->
+            <!-- ======================== -->
             <form id="loginForm">
-                <div class="mb-3">
-                    <label class="form-label small text-muted fw-bold">EMAIL</label>
-                    <input type="email" class="form-control" id="loginEmail" required>
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="you@example.com" required>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label small text-muted fw-bold">PASSWORD</label>
-                    <input type="password" class="form-control" id="loginPassword" required>
-                    <div class="text-end mt-1"><a href="#" class="small">Forgot password?</a></div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    <a href="#" class="forgot-link">Forgot password?</a>
                 </div>
-                <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary">Log In</button>
-                </div>
+                <button type="submit" class="btn-cta" id="loginSubmitBtn">Sign In</button>
             </form>
 
+            <!-- ======================== -->
+            <!-- SIGNUP FORM             -->
+            <!-- ======================== -->
             <form id="signupForm" class="d-none">
-                <div class="row g-2">
-                    <div class="col-6 mb-2">
-                        <label class="form-label small text-muted fw-bold">USERNAME</label>
-                        <input type="text" class="form-control" id="signupUsername" required>
+                <div class="form-group__row">
+                    <div class="form-group">
+                        <label for="signupUsername">Username</label>
+                        <input type="text" id="signupUsername" placeholder="traveler42" required>
                     </div>
-                    <div class="col-6 mb-2">
-                        <label class="form-label small text-muted fw-bold">PHONE</label>
-                        <input type="tel" class="form-control" id="signupPhone" placeholder="+91..." required>
+                    <div class="form-group">
+                        <label for="signupPhone">Phone</label>
+                        <input type="tel" id="signupPhone" placeholder="+91..." required>
                     </div>
                 </div>
-                <div class="mb-2">
-                    <label class="form-label small text-muted fw-bold">EMAIL</label>
-                    <input type="email" class="form-control" id="signupEmail" required>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="you@example.com" required>
                 </div>
-                <div class="mb-2">
-                    <label class="form-label small text-muted fw-bold">PASSPORT / AADHAAR NO.</label>
-                    <input type="text" class="form-control" id="signupPassport" required>
+                <div class="form-group">
+                    <label for="signupPassport">Passport / Aadhaar No.</label>
+                    <input type="text" id="signupPassport" placeholder="XXXX-XXXX-XXXX" required>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label small text-muted fw-bold">PASSWORD</label>
-                    <input type="password" class="form-control" id="signupPassword" required>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a strong password" required>
                 </div>
-                <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary">Create Account</button>
-                </div>
+                <button type="submit" class="btn-cta">Create Account</button>
             </form>
 
+            <!-- ======================== -->
+            <!-- EMAIL OTP FORM          -->
+            <!-- ======================== -->
             <form id="emailOtpForm" class="d-none">
-                <div class="mb-3 text-center">
-                    <label class="form-label fw-bold">Verify Email</label>
-                    <input type="text" class="form-control text-center fs-4 letter-spacing-2" id="emailOtp" maxlength="6" placeholder="XXXXXX" required>
-                    <div class="form-text">Enter the 6-digit code sent to your email.</div>
+                <div class="form-group" style="text-align:center;">
+                    <label>Verify Your Email</label>
+                    <input type="text" id="emailOtp" class="otp-input" maxlength="6" placeholder="------" required>
+                    <div class="otp-helper">Enter the 6-digit code sent to your email.</div>
                 </div>
-                <div class="d-grid mb-3"><button type="submit" class="btn btn-primary">Verify Email</button></div>
+                <button type="submit" class="btn-cta">Verify Email</button>
             </form>
 
+            <!-- ======================== -->
+            <!-- PHONE OTP FORM          -->
+            <!-- ======================== -->
             <form id="phoneOtpForm" class="d-none">
-                <div class="mb-3 text-center">
-                    <label class="form-label fw-bold">Verify Phone</label>
-                    <input type="text" class="form-control text-center fs-4 letter-spacing-2" id="phoneOtp" maxlength="6" placeholder="XXXXXX" required>
-                    <div class="form-text">Enter the 6-digit code sent to your phone.</div>
+                <div class="form-group" style="text-align:center;">
+                    <label>Verify Your Phone</label>
+                    <input type="text" id="phoneOtp" class="otp-input" maxlength="6" placeholder="------" required>
+                    <div class="otp-helper">Enter the 6-digit code sent to your phone.</div>
                 </div>
-                <div class="d-grid mb-3"><button type="submit" class="btn btn-primary">Verify & Finish</button></div>
+                <button type="submit" class="btn-cta">Verify & Finish</button>
             </form>
 
-            <div id="successView" class="d-none text-center py-5">
-                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                <h4 class="text-success mt-3">You're In!</h4>
-                <p class="text-muted">Redirecting to dashboard...</p>
+            <!-- ======================== -->
+            <!-- SUCCESS VIEW            -->
+            <!-- ======================== -->
+            <div id="successView" class="success-view d-none">
+                <div class="success-icon">
+                    <i class="bi bi-check-lg"></i>
+                </div>
+                <h3>You're In!</h3>
+                <p>Redirecting to dashboard...</p>
             </div>
 
-            <div id="toggleContainer" class="text-center">
-                <p id="toggleText" class="small text-muted mb-0">
-                    Need an account? <a href="#" id="showSignup" class="fw-bold">Register</a>
-                </p>
-            </div>
-            
-            <div class="text-center mt-3">
-                 <button type="button" class="btn btn-outline-warning btn-sm rounded-pill" id="getTipBtn">
-                    ✨ Get a Travel Tip
+            <!-- OAuth Divider (shown on login/signup) -->
+            <div id="oauthSection">
+                <div class="auth-divider">
+                    <span>Or continue with</span>
+                </div>
+
+                <!-- Google OAuth Button -->
+                <button type="button" class="btn-google" id="googleOAuthBtn">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Continue with Google
                 </button>
             </div>
-        </div>
 
-        <div class="auth-qr-section">
-            <div class="qr-box"><i class="bi bi-qr-code"></i></div>
-            <h4 class="fw-bold mb-2">Log in with QR Code</h4>
-            <p class="text-muted small mb-4">Scan this with the <strong>Travel Buddy App</strong> <br>to log in instantly.</p>
-            <button class="btn btn-outline-dark btn-sm">Download App</button>
+            <!-- Toggle Link -->
+            <div class="auth-toggle" id="toggleContainer">
+                <span id="toggleText">
+                    Don't have an account? <a href="#" id="showSignup">Create one</a>
+                </span>
+            </div>
         </div>
     </div>
+</div>
 
-    <div class="modal fade" id="tipModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header border-0"><h5 class="modal-title">✨ AI Travel Tip</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-          <div class="modal-body text-center" id="tipModalBody"></div>
-        </div>
-      </div>
-    </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- STATE & ELEMENTS ---
+    const views = {
+        login: document.getElementById('loginForm'),
+        signup: document.getElementById('signupForm'),
+        emailOtp: document.getElementById('emailOtpForm'),
+        phoneOtp: document.getElementById('phoneOtpForm'),
+        success: document.getElementById('successView')
+    };
+    const ui = {
+        title: document.getElementById('formTitle'),
+        msg: document.getElementById('welcomeMessage'),
+        toggleContainer: document.getElementById('toggleContainer'),
+        toggleText: document.getElementById('toggleText'),
+        apiMessage: document.getElementById('apiMessage'),
+        oauthSection: document.getElementById('oauthSection')
+    };
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- STATE & ELEMENTS ---
-            const views = {
-                login: document.getElementById('loginForm'),
-                signup: document.getElementById('signupForm'),
-                emailOtp: document.getElementById('emailOtpForm'),
-                phoneOtp: document.getElementById('phoneOtpForm'),
-                success: document.getElementById('successView')
-            };
-            const ui = {
-                title: document.getElementById('formTitle'),
-                msg: document.getElementById('welcomeMessage'),
-                toggleContainer: document.getElementById('toggleContainer'),
-                toggleText: document.getElementById('toggleText'),
-                apiMessage: document.getElementById('apiMessage'),
-                tipBtn: document.getElementById('getTipBtn')
-            };
-            
-            const tipModal = new bootstrap.Modal(document.getElementById('tipModal'));
-            const tipModalBody = document.getElementById('tipModalBody');
+    let userEmail = '';
+    let userPhone = '';
 
-            let userEmail = '';
-            let userPhone = '';
+    function getCookie(name) {
+        if (!document.cookie) return null;
+        const token = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+        return token ? decodeURIComponent(token.split('=')[1]) : null;
+    }
+    const csrftoken = getCookie('csrftoken');
 
-            function getCookie(name) {
-                if (!document.cookie) return null;
-                const token = document.cookie.split('; ').find(row => row.startsWith(name + '='));
-                return token ? decodeURIComponent(token.split('=')[1]) : null;
+    // --- VIEW SWITCHER ---
+    const showView = (view) => {
+        // Hide alert
+        ui.apiMessage.style.display = 'none';
+        // Hide all forms
+        Object.values(views).forEach(el => el.classList.add('d-none'));
+        // Show target
+        views[view].classList.remove('d-none');
+        // Reset toggles
+        ui.toggleContainer.classList.remove('d-none');
+        ui.oauthSection.classList.remove('d-none');
+
+        if (view === 'login') {
+            ui.title.textContent = 'Welcome back';
+            ui.msg.textContent = 'Sign in to continue your adventure';
+            ui.toggleText.innerHTML = `Don't have an account? <a href="#" id="showSignup">Create one</a>`;
+            document.getElementById('showSignup').onclick = (e) => { e.preventDefault(); showView('signup'); };
+        } else if (view === 'signup') {
+            ui.title.textContent = 'Create an account';
+            ui.msg.textContent = 'Start your safe journey today';
+            ui.toggleText.innerHTML = `Already have an account? <a href="#" id="showLogin">Sign in</a>`;
+            document.getElementById('showLogin').onclick = (e) => { e.preventDefault(); showView('login'); };
+        } else if (view === 'emailOtp' || view === 'phoneOtp') {
+            ui.title.textContent = 'Verification';
+            ui.msg.textContent = 'We need to verify your identity';
+            ui.toggleContainer.classList.add('d-none');
+            ui.oauthSection.classList.add('d-none');
+        } else if (view === 'success') {
+            ui.toggleContainer.classList.add('d-none');
+            ui.oauthSection.classList.add('d-none');
+        }
+    };
+
+    const showMsg = (text, isErr = true) => {
+        ui.apiMessage.innerHTML = Array.isArray(text) ? text.join('<br>') : text;
+        ui.apiMessage.className = `api-alert ${isErr ? 'error' : 'success'}`;
+        ui.apiMessage.style.display = 'block';
+    };
+
+    // --- 1. LOGIN ---
+    views.login.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('loginSubmitBtn');
+        btn.textContent = 'Signing in...';
+        btn.disabled = true;
+        try {
+            const res = await fetch('/api/v1/auth/login/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({
+                    email: document.getElementById('loginEmail').value,
+                    password: document.getElementById('loginPassword').value
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('authToken', data.token);
+                showMsg('Login Successful! Redirecting...', false);
+                setTimeout(() => window.location.href = '/dashboard/', 1000);
+            } else {
+                showMsg(data.error || 'Login failed.');
+                btn.textContent = 'Sign In';
+                btn.disabled = false;
             }
-            const csrftoken = getCookie('csrftoken');
+        } catch (err) {
+            showMsg('Server connection failed.');
+            btn.textContent = 'Sign In';
+            btn.disabled = false;
+        }
+    });
 
-            // --- VIEW SWITCHER ---
-            const showView = (view) => {
-                ui.apiMessage.classList.add('d-none');
-                Object.values(views).forEach(el => el.classList.add('d-none'));
-                views[view].classList.remove('d-none');
-                ui.toggleContainer.classList.remove('d-none');
-                ui.tipBtn.classList.remove('d-none');
-
-                if (view === 'login') {
-                    ui.title.textContent = 'Namaste India';
-                    ui.msg.textContent = 'Welcome back! Please sign in.';
-                    ui.toggleText.innerHTML = `Need an account? <a href="#" id="showSignup" class="fw-bold">Register</a>`;
-                    document.getElementById('showSignup').onclick = (e) => { e.preventDefault(); showView('signup'); };
-                } else if (view === 'signup') {
-                    ui.title.textContent = 'Create Account';
-                    ui.msg.textContent = 'Start your safe journey.';
-                    ui.toggleText.innerHTML = `Already have an account? <a href="#" id="showLogin" class="fw-bold">Log In</a>`;
-                    document.getElementById('showLogin').onclick = (e) => { e.preventDefault(); showView('login'); };
-                } else if (view === 'emailOtp' || view === 'phoneOtp') {
-                    ui.title.textContent = 'Verification';
-                    ui.msg.textContent = 'Check your inbox/SMS.';
-                    ui.toggleContainer.classList.add('d-none');
-                    ui.tipBtn.classList.add('d-none');
-                } else if (view === 'success') {
-                    ui.toggleContainer.classList.add('d-none');
-                    ui.tipBtn.classList.add('d-none');
-                }
-            };
-
-            const showMsg = (text, isErr=true) => {
-                ui.apiMessage.innerHTML = Array.isArray(text) ? text.join('<br>') : text;
-                ui.apiMessage.className = `alert py-2 small text-center ${isErr ? 'alert-danger' : 'alert-success'}`;
-                ui.apiMessage.classList.remove('d-none');
-            };
-
-            // --- API ACTIONS (Connected to your views.py) ---
-
-            // 1. LOGIN (To LoginView)
-            views.login.addEventListener('submit', async(e) => {
-                e.preventDefault();
-                try {
-                    // NOTICE: Using /api/v1/auth/login/ to avoid conflict with page URL
-                    const res = await fetch('/api/v1/auth/login/', { 
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-                        body: JSON.stringify({
-                            email: document.getElementById('loginEmail').value,
-                            password: document.getElementById('loginPassword').value
-                        })
-                    });
-                    const data = await res.json();
-                    if(res.ok) {
-                        localStorage.setItem('authToken', data.token);
-                        showMsg('Login Successful!', false);
-                        setTimeout(() => window.location.href = '/dashboard/', 1000);
-                    } else showMsg(data.error || 'Login failed.');
-                } catch(err) { showMsg('Server connection failed.'); }
+    // --- 2. REGISTER ---
+    views.signup.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        userEmail = document.getElementById('signupEmail').value;
+        userPhone = document.getElementById('signupPhone').value;
+        try {
+            const res = await fetch('/api/v1/auth/register/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({
+                    username: document.getElementById('signupUsername').value,
+                    email: userEmail,
+                    phone: userPhone,
+                    passport_aadhaar: document.getElementById('signupPassport').value,
+                    password: document.getElementById('signupPassword').value
+                })
             });
+            const data = await res.json();
+            if (res.ok) showView('emailOtp');
+            else showMsg(data.errors || 'Registration failed.');
+        } catch (err) { showMsg('Server connection failed.'); }
+    });
 
-            // 2. REGISTER (To RegisterView)
-            views.signup.addEventListener('submit', async(e) => {
-                e.preventDefault();
-                userEmail = document.getElementById('signupEmail').value;
-                userPhone = document.getElementById('signupPhone').value;
-                
-                try {
-                    const res = await fetch('/api/v1/auth/register/', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-                        body: JSON.stringify({
-                            username: document.getElementById('signupUsername').value,
-                            email: userEmail,
-                            phone: userPhone,
-                            passport_aadhaar: document.getElementById('signupPassport').value, // Matches Serializer
-                            password: document.getElementById('signupPassword').value
-                        })
-                    });
-                    const data = await res.json();
-                    if(res.ok) showView('emailOtp');
-                    else showMsg(data.errors || 'Registration failed.');
-                } catch(err) { showMsg('Server connection failed.'); }
+    // --- 3. VERIFY EMAIL ---
+    views.emailOtp.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch('/api/v1/auth/verify-email/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({
+                    email: userEmail,
+                    otp: document.getElementById('emailOtp').value
+                })
             });
+            const data = await res.json();
+            if (res.ok) showView('phoneOtp');
+            else showMsg(data.error || 'Invalid Email OTP');
+        } catch (err) { showMsg('Server connection failed.'); }
+    });
 
-            // 3. VERIFY EMAIL (To VerifyEmailOTPView)
-            views.emailOtp.addEventListener('submit', async(e) => {
-                e.preventDefault();
-                try {
-                    const res = await fetch('/api/v1/auth/verify-email/', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-                        body: JSON.stringify({
-                            email: userEmail,
-                            otp: document.getElementById('emailOtp').value
-                        })
-                    });
-                    const data = await res.json();
-                    if(res.ok) showView('phoneOtp');
-                    else showMsg(data.error || 'Invalid Email OTP');
-                } catch(err) { showMsg('Server connection failed.'); }
+    // --- 4. VERIFY PHONE ---
+    views.phoneOtp.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch('/api/v1/auth/verify-phone/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({
+                    phone: userPhone,
+                    otp: document.getElementById('phoneOtp').value
+                })
             });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('authToken', data.token);
+                showView('success');
+                setTimeout(() => window.location.href = '/dashboard/', 2000);
+            } else showMsg(data.error || 'Invalid Phone OTP');
+        } catch (err) { showMsg('Server connection failed.'); }
+    });
 
-            // 4. VERIFY PHONE (To VerifyPhoneOTPView)
-            views.phoneOtp.addEventListener('submit', async(e) => {
-                e.preventDefault();
-                try {
-                    const res = await fetch('/api/v1/auth/verify-phone/', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-                        body: JSON.stringify({
-                            phone: userPhone,
-                            otp: document.getElementById('phoneOtp').value
-                        })
-                    });
-                    const data = await res.json();
-                    if(res.ok) {
-                        localStorage.setItem('authToken', data.token);
-                        showView('success');
-                        setTimeout(() => window.location.href = '/dashboard/', 2000);
-                    } else showMsg(data.error || 'Invalid Phone OTP');
-                } catch(err) { showMsg('Server connection failed.'); }
-            });
+    // --- 5. GOOGLE OAUTH ---
+    document.getElementById('googleOAuthBtn').addEventListener('click', () => {
+        // Redirect to Django's allauth Google login endpoint
+        // This requires django-allauth to be configured in the backend
+        window.location.href = '/accounts/google/login/?process=login';
+    });
 
-            // --- TRAVEL TIP (Gemini API) ---
-            ui.tipBtn.addEventListener('click', async () => {
-                tipModalBody.innerHTML = `<div class="spinner-border text-warning"></div><div class="mt-2">Generating tip...</div>`;
-                tipModal.show();
-                // Add API Key Here
-                const apiKey = ""; 
-                try {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ contents: [{ parts: [{ text: "Give me one short, fascinating travel tip for India." }] }] })
-                    });
-                    const data = await res.json();
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    tipModalBody.innerHTML = text ? `<p class="lead">${text}</p>` : `<p class="text-danger">No tip found.</p>`;
-                } catch(e) { tipModalBody.innerHTML = `<p class="text-danger">Connection error.</p>`; }
-            });
+    // Initialize
+    showView('login');
+});
+</script>
 
-            showView('login');
-        });
-    </script>
 </body>
 </html>

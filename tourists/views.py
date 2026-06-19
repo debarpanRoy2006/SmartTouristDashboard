@@ -53,7 +53,7 @@ if valid_models:
     else:
         selected_model_name = valid_models[0]
 
-print(f"✅ ACTIVATING MODEL: {selected_model_name}")
+print(f"[OK] ACTIVATING MODEL: {selected_model_name}")
 ai_model = genai.GenerativeModel(selected_model_name)
 
 # ==========================================
@@ -399,10 +399,6 @@ def fetch_blockchain_id_details(request, blockchain_id):
         "path_history": "/api/v1/traveler/path/8821/"
     }
     return JsonResponse(rescue_packet)
-<<<<<<< HEAD
-=======
-
-
 
 def staff_login_view(request):
     # If already logged in, redirect them immediately to their respective dashboards
@@ -436,9 +432,7 @@ def staff_login_view(request):
         form = AuthenticationForm()
         
     return render(request, 'staff_login.html', {'form': form})
-import json
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.csrf import csrf_exempt
@@ -526,4 +520,3 @@ def create_authority_account(request):
             return JsonResponse({"error": f"Server error: {str(e)}"}, status=500)
             
     return JsonResponse({"error": "Method not allowed. Use POST."}, status=405)
->>>>>>> dedec42e8b5fd72ac9b91b686e17a3e295fc0a71

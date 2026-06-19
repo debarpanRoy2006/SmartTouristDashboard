@@ -12,10 +12,11 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
+    path('accounts/', include('allauth.urls')),  # Google OAuth routes
     path('api/v1/auth/', include('tourists.urls')),
     path('', include('tourists.urls')),  # <---- THIS MUST EXIST
     
-   
+
 # etc...
 
 ]
